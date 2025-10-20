@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 import { useNavigate, Link } from "react-router-dom";
 import "./AuthPageStyle.css";
 
@@ -21,9 +21,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div classname="page-wrapper">
+    <div className="page-wrapper">
     <div className="login-container">
-      <h1>Welcome Back</h1>
+      <h1>P</h1>
       <h2>Sign in to your account</h2>
       <form onSubmit={handleLogin}>
         <input
@@ -40,7 +40,7 @@ export default function LoginPage() {
         <button type="submit">Login</button>
       </form>
       <Link to="/register">
-        <button style={{ marginTop: "10px" }}>Register Instead</button>
+        <button style={{ marginTop: "10px" }}>Create an Account</button>
       </Link>
     </div>
     </div>
