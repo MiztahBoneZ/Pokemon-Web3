@@ -2,7 +2,7 @@ import React from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import "./auth/login-register/AuthPageStyle.css";
+import "./auth/AuthPageStyle.css";
 
 export default function GamePage() {
   const navigate = useNavigate();
