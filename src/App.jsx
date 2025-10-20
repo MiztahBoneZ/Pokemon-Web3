@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
-import LoginPage from "./components/authentication/LoginPage";
-import RegisterPage from "./components/authentication/RegisterPage";
+import LoginPage from 'components/auth/login-register/LoginPage';
+import RegisterPage from "./components/auth/login-register/RegisterPage";
 import GamePage from "./components/GamePage";
 
 function App() {
