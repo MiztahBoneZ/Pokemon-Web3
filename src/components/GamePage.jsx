@@ -1,29 +1,41 @@
 import React from "react";
-import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import "./auth/AuthPageStyle.css";
+import "./GamePage.css";
 
 export default function GamePage() {
   const navigate = useNavigate();
+  const user = auth.currentUser;
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      alert("Signed out successfully.");
       navigate("/");
     } catch (error) {
-      alert("Error signing out: " + error.message);
+      console.error("Error signing out:", error);
     }
   };
 
   return (
-    <div className="login-wrapper">
-      <div className="login-container">
-        <h1>Pokémon Roguelike</h1>
-        <h2>Trainer Dashboard</h2>
-        <p>Welcome, trainer. Ready to explore?</p>
-        <button onClick={handleSignOut}>Sign Out</button>
+    <div className="gamepage-container">
+      {/* User Info Card */}
+      <div className="user-card">
+        <p className="username">{user?.email}</p>
+        <button className="signout-btn" onClick={handleSignOut}>
+          Sign Out
+        </button>
+      </div>
+
+      {/* Main Menu */}
+      <div className="menu-container">
+        <h1 className="menu-title">Pokémon Roguelike</h1>
+        <div className="menu-buttons">
+          <button>Start</button>
+          <button>Current Team</button>
+          <button>Pokémons</button>
+          <button>Trade</button>
+        </div>
       </div>
     </div>
   );

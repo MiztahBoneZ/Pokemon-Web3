@@ -23,7 +23,7 @@ export default function LoginPage() {
   return (
     <div className="page-wrapper">
     <div className="login-container">
-      <h1>P</h1>
+      <h1>PayPal</h1>
       <h2>Sign in to your account</h2>
       <form onSubmit={handleLogin}>
         <input

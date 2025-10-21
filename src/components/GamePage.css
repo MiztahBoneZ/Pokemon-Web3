@@ -1,0 +1,87 @@
+/* Game Page Layout */
+.gamepage-container {
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* push content toward bottom */
+  position: relative;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+/* User Info Card */
+.user-card {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.username {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.signout-btn {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.signout-btn:hover {
+  background-color: #e84141;
+}
+
+/* Main Menu */
+.menu-container {
+  text-align: center;
+}
+
+.menu-title {
+  font-size: 36px;
+  margin-bottom: 40px;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Menu Buttons style */
+.menu-buttons button {
+  width: 160px;
+  padding: 15px;
+  margin-bottom: 5%;
+  background-color: #ffcb05;
+  color: #2a75bb;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.menu-buttons button:hover {
+  transform: scale(1.05);
+  background-color: #f5b700;
+}

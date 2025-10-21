@@ -25,8 +25,8 @@ export default function RegisterPage() {
   return (
     <div className="login-wrapper">
       <div className="login-container">
-        <h1>Join the Adventure</h1>
-        <h2>Create your Pokémon Trainer account</h2>
+        <h1>regitrer</h1>
+        <h2>Creatte acc</h2>
         <form onSubmit={handleRegister}>
           {error && <p className="error">{error}</p>}
           <input
