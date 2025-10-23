@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "Bulbasaur",
+    "type": "Grass",
+    "hp": 45,
+    "attack": 49,
+    "moves": [
+      { "name": "Tackle", "power": 10 },
+      { "name": "Vine Whip", "power": 12 }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Charmander",
+    "type": "Fire",
+    "hp": 39,
+    "attack": 52,
+    "moves": [
+      { "name": "Scratch", "power": 10 },
+      { "name": "Ember", "power": 12 }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Squirtle",
+    "type": "Water",
+    "hp": 44,
+    "attack": 48,
+    "moves": [
+      { "name": "Tackle", "power": 10 },
+      { "name": "Water Gun", "power": 12 }
+    ]
+  }
+]
