@@ -1,0 +1,7 @@
+﻿Font: PokemonSolidNormal-xyWR
+license: Creative Commons (by) Attribution
+link: https://www.fontspace.com/pokemon-solid-font-f13844
+
+Font: AtlantisInternational-jen0
+license: Freeware
+link: https://www.fontspace.com/atlantis-international-font-f31357
