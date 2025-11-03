@@ -12,12 +12,13 @@ export default class TeamSelectScene extends Phaser.Scene {
     let y = 120;
 
     pokemonData.forEach((p, index) => {
-      const text = this.add.text(280, y, `${p.name} (${p.type})`, { fontSize: '20px', fill: '#aaa' })
-        .setInteractive()
-        .on('pointerdown', () => this.selectPokemon(p, text));
+    const typeText = Array.isArray(p.type) ? p.type.join('/') : p.types; // handle single or multiple types
+    const text = this.add.text(280, y, `${p.name} (${typeText})`, { fontSize: '20px', fill: '#aaa' })
+      .setInteractive()
+      .on('pointerdown', () => this.selectPokemon(p, text));
 
-      y += 50;
-    });
+    y += 50;  
+  });
   }
 
   selectPokemon(pokemon, text) {
