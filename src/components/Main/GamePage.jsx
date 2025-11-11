@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { auth } from "../firebase";
+import { auth } from "../../Core/firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Phaser from "phaser";
-import gameConfig from "../game/main"; // <-- export config from main.js
+import gameConfig from "../game/main";
 import "./GamePage.css";
 
 export default function GamePage() {
@@ -31,7 +31,6 @@ export default function GamePage() {
       const game = new Phaser.Game(gameConfig);
       setPhaserGame(game);
 
-      // Optional: cleanup when leaving or unmounting
       return () => {
         game.destroy(true);
       };
