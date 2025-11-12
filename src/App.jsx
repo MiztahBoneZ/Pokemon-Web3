@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./Core/firebase";
-import LoginPage from './components/auth/LoginPage';
+import LoginPage from "./components/auth/LoginPage";
 import RegisterPage from "./components/auth/RegisterPage";
+import OnboardingPage from "./components/auth/Onboardpage";
 import GamePage from "./components/Main/GamePage";
 
 function App() {
@@ -28,7 +29,11 @@ function App() {
       />
       <Route
         path="/register"
-        element={user ? <Navigate to="/game" /> : <RegisterPage />}
+        element={user ? <Navigate to="/onboarding" /> : <RegisterPage />}
+      />
+      <Route
+        path="/onboarding"
+        element={user ? <OnboardingPage /> : <Navigate to="/" />}
       />
       <Route
         path="/game"
