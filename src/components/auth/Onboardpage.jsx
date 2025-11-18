@@ -39,19 +39,23 @@ export default function OnboardingPage() {
       alert("Connect wallet first.");
       return;
     }
+
     setIsHatching(true);
 
     try {
-      // 1. Random Pokémon ID (for example Gen1: 1–151)
       const randomId = Math.floor(Math.random() * 151) + 1;
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`);
+      const response = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${randomId}`
+      );
       const data = await response.json();
 
-      // 2. Extract base elements
       const name = data.name;
-      const sprite = data.sprites.other?.["official-artwork"]?.front_default 
-                     || data.sprites.front_default;
-      const types = data.types.map(t => t.type.name);
+      const sprite =
+        data.sprites.other?.["official-artwork"]?.front_default ||
+        data.sprites.front_default;
+
+      const types = data.types.map((t) => t.type.name);
+
       const baseStats = data.stats.reduce((acc, s) => {
         acc[s.stat.name] = s.base_stat;
         return acc;
@@ -60,33 +64,46 @@ export default function OnboardingPage() {
       const randomizedStats = {};
       for (const statName in baseStats) {
         const base = baseStats[statName];
-        const variation = Math.floor(base * 0.2 * (Math.random() - 0.5)); 
+        const variation = Math.floor(base * 0.2 * (Math.random() - 0.5));
         randomizedStats[statName] = base + variation;
       }
 
-      // 4. Pick 4 random moves (names only)
-      const allMoves = data.moves.map(m => m.move.name);
-      const selectedMoves = allMoves.sort(() => 0.5 - Math.random()).slice(0, 4);
+      const allMoves = data.moves.map((m) => m.move.name);
+      const selectedMoves = allMoves
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 4);
 
-      // 5. Construct the hatched Pokémon object
       const hatchedPokemon = {
-        id: randomId,
+        pokemonId: randomId,
         name,
         sprite,
         types,
         stats: randomizedStats,
-        moves: selectedMoves
+        moves: selectedMoves,
+        createdAt: new Date().toISOString(),
       };
 
       setPokemon(hatchedPokemon);
 
-      // 6. Save to Firestore under user
       const user = auth.currentUser;
+
       if (user) {
-        await setDoc(doc(db, "users", user.uid), {
-          wallet: walletAddress,
-          starterPokemon: hatchedPokemon
-        });
+        const userRef = doc(db, "users", user.uid);
+        await setDoc(
+          userRef,
+          {
+            wallet: walletAddress,
+            hasCompletedOnboarding: true,
+            UserFirebaseID: user.uid,
+          },
+          { merge: true }
+        );
+
+        // Save Pokémon data
+        const pokemonId = crypto.randomUUID();
+        const inventoryRef = doc(db, "users", user.uid, "inventory", pokemonId);
+
+        await setDoc(inventoryRef, hatchedPokemon);
       }
 
       alert(`You hatched ${name.toUpperCase()}!`);
@@ -112,10 +129,7 @@ export default function OnboardingPage() {
           <p style={{ color: "green" }}>Wallet: {walletAddress}</p>
         )}
 
-        <button 
-          onClick={hatchPokemon} 
-          disabled={!walletAddress || isHatching}
-        >
+        <button onClick={hatchPokemon} disabled={!walletAddress || isHatching}>
           {isHatching ? "Hatching…" : "Hatch Pokémon"}
         </button>
 
@@ -133,9 +147,7 @@ export default function OnboardingPage() {
                 </li>
               ))}
             </ul>
-            <button onClick={() => navigate("/game")}>
-              Start Adventure
-            </button>
+            <button onClick={() => navigate("/game")}>Start Adventure</button>
           </div>
         )}
       </div>
