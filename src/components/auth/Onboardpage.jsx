@@ -62,7 +62,6 @@ export default function OnboardingPage() {
     setShowEggAnimation(true);
 
     try {
-      // Simulate egg shaking animation
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const randomId = Math.floor(Math.random() * 151) + 1;
@@ -119,7 +118,6 @@ export default function OnboardingPage() {
       setShowConfetti(true);
       setCurrentStep(3);
 
-      // Hide confetti after 3 seconds
       setTimeout(() => setShowConfetti(false), 3000);
 
       const user = auth.currentUser;
@@ -136,7 +134,6 @@ export default function OnboardingPage() {
           { merge: true }
         );
 
-        // Save Pokémon data
         const pokemonId = crypto.randomUUID();
         const inventoryRef = doc(db, "users", user.uid, "inventory", pokemonId);
 
@@ -198,8 +195,6 @@ export default function OnboardingPage() {
     };
     return colors[type] || "#777";
   };
-
-  // ... imports and state remain the same ...
 
   return (
     <div className="onboarding-wrapper">
@@ -324,8 +319,6 @@ export default function OnboardingPage() {
                 )}
                 Congratulations!
               </h2>
-              {/* Pokémon card remains the same but now uses the new grid layout */}
-              // Replace the pokemon-card div section with this complete code:
               <div
                 className="pokemon-card"
                 style={{
