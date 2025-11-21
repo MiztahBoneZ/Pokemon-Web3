@@ -54,7 +54,7 @@ export default function GamePage() {
           <div className="menu-buttons">
             <button onClick={handleStartGame}>Start</button>
             <button>Current Team</button>
-            <button>Pokémons</button>
+            <button onClick={() => navigate("/game/pokemon")}>Pokémons</button>
             <button>Trade</button>
           </div>
         </div>

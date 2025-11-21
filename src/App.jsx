@@ -6,6 +6,7 @@ import LoginPage from "./components/auth/LoginPage";
 import RegisterPage from "./components/auth/RegisterPage";
 import OnboardingPage from "./components/auth/Onboardpage";
 import GamePage from "./components/Main/GamePage";
+import AllPokemon from "./components/Inventory/AllPokemon";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -35,9 +36,10 @@ function App() {
         path="/onboarding"
         element={user ? <OnboardingPage /> : <Navigate to="/" />}
       />
+      <Route path="/game" element={user ? <GamePage /> : <Navigate to="/" />} />
       <Route
-        path="/game"
-        element={user ? <GamePage /> : <Navigate to="/" />}
+        path="/game/pokemon"
+        element={user ? <AllPokemon /> : <Navigate to="/" />}
       />
     </Routes>
   );

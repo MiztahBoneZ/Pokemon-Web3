@@ -1,96 +1,100 @@
-/* Game Page Layout */
+/* ===== 8-BIT RPG GAME-PAGE SKIN ===== */
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+}
+
+/* 1.  page shell – Game-Boy greens instead of blue gradient */
 .gamepage-container {
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  background: #0f380f; /* darkest green */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end; /* push content toward bottom */
   position: relative;
-  color: white;
-  font-family: Arial, sans-serif;
+  color: #9bbc0f; /* light green text */
+  font-family: "Press Start 2P", cursive;
   overflow: hidden;
+  border: 4px solid #306230; /* pixel border around whole view */
 }
 
-/* User Info Card */
+/* 2.  user card – pixel window */
 .user-card {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  padding: 15px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  top: 12px;
+  right: 12px;
+  background: #306230;
+  border: 3px solid #9bbc0f;
+  padding: 8px 12px;
+  box-shadow: 4px 4px 0 #1a2f1a;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .username {
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  font-weight: 500;
+  margin: 0 0 6px;
 }
 
 .signout-btn {
-  background-color: #ff6b6b;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  background: #da4848;
+  color: #0f380f;
+  border: 2px solid #9bbc0f;
+  padding: 4px 8px;
+  font-family: "Press Start 2P", cursive;
+  font-size: 9px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  transition: none;
 }
-
 .signout-btn:hover {
-  background-color: #e84141;
+  background: #b83838;
+  transform: translate(1px, 1px);
 }
 
-/* Main Menu */
+/* 3.  menu container */
 .menu-container {
   text-align: center;
+  margin-top: 24px;
 }
 
 .menu-title {
-  font-size: 36px;
-  margin-bottom: 40px;
+  font-size: 18px; /* was 36 */
+  margin-bottom: 20px;
+  color: #ffcb05; /* Pokémon yellow */
+  text-shadow: 2px 2px 0 #306230;
 }
 
 .menu-buttons {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
   flex-wrap: wrap;
-}
-
-/* Menu Buttons style */
-.menu-buttons button {
-  width: 160px;
-  padding: 15px;
-  margin-bottom: 5%;
-  background-color: #ffcb05;
-  color: #2a75bb;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.15s, background-color 0.15s;
-}
-
-.menu-buttons button:hover {
-  transform: scale(1.05);
-  background-color: #f5b700;
-}
-
-#phaser-container {
-  display: flex;
   justify-content: center;
-  align-items: center;
-  background-color: #111;
-  margin-top: 30px;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  gap: 12px;
+}
+
+/* 4.  pixel menu buttons */
+.menu-buttons button {
+  width: 144px; /* was 160 */
+  padding: 10px;
+  background: #ffcb05;
+  color: #0f380f;
+  border: 3px solid #c7a008;
+  border-radius: 0;
+  font-family: "Press Start 2P", cursive;
+  font-size: 10px; /* was 16 */
+  cursor: pointer;
+  transition: none;
+}
+.menu-buttons button:hover {
+  background: #f5b700;
+  transform: translate(2px, 2px);
+}
+
+/* 5.  phaser canvas frame */
+#phaser-container {
+  margin-top: 20px;
+  border: 4px solid #9bbc0f;
+  box-shadow: 4px 4px 0 #306230;
+  background: #000; /* keeps canvas black */
 }
