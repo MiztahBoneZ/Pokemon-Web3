@@ -273,7 +273,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <h2>🥚 Hatch Your Starter</h2>
+              <h2>Hatch Your Starter</h2>
               <p className="step-description">
                 Click the egg to hatch your random starter Pokémon! Every
                 trainer gets a unique Pokémon to start their adventure.
@@ -439,7 +439,7 @@ export default function OnboardingPage() {
                 className="primary-button large"
                 onClick={() => navigate("/game")}
               >
-                🎮 Start Your Adventure!
+                Start Your Adventure!
               </button>
             </div>
           </div>
