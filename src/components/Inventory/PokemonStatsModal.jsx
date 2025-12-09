@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./PokemonStatsModal.css";
 
 export default function PokemonStatsModal({ mon, close }) {
@@ -27,7 +27,32 @@ export default function PokemonStatsModal({ mon, close }) {
     fairy: "#EE99AC",
   };
 
-  // Fetch move details
+  const getExplorerURL = () => {
+    if (!mon.nftTxHash) return null;
+
+    const chain = mon.blockchain?.toLowerCase();
+
+    if (chain === "ethereum") return `https://etherscan.io/tx/${mon.nftTxHash}`;
+    if (chain === "polygon")
+      return `https://polygonscan.com/tx/${mon.nftTxHash}`;
+    if (chain === "bsc") return `https://bscscan.com/tx/${mon.nftTxHash}`;
+    if (chain === "avalanche")
+      return `https://snowtrace.io/tx/${mon.nftTxHash}`;
+
+    return null;
+  };
+
+  const explorerURL = getExplorerURL();
+
+  const formatName = () => {
+    if (mon.nickname && mon.nickname.trim().length) {
+      return mon.nickname.charAt(0).toUpperCase() + mon.nickname.slice(1);
+    }
+    return mon.name.toUpperCase();
+  };
+
+  const safeTypes = Array.isArray(mon.types) ? mon.types : ["normal"];
+
   const fetchMoveDetails = async (moveName) => {
     try {
       const res = await fetch(`https://pokeapi.co/api/v2/move/${moveName}`);
@@ -45,11 +70,11 @@ export default function PokemonStatsModal({ mon, close }) {
           X
         </button>
 
-        <h2 className="stats-title">{mon.nickname || mon.name}</h2>
+        <h2 className="stats-title">{formatName()}</h2>
         <img src={mon.sprite} alt={mon.name} className="stats-img" />
 
         <div className="stats-types">
-          {mon.types.map((t) => (
+          {safeTypes.map((t) => (
             <span
               className="stats-type-tag"
               key={t}
@@ -60,6 +85,49 @@ export default function PokemonStatsModal({ mon, close }) {
           ))}
         </div>
 
+        {/* --- NFT INFO SECTION --- */}
+        {mon.onChain && (
+          <div className="stats-section nft-section">
+            <h3>NFT DATA</h3>
+
+            <div className="nft-info-row">
+              <strong>Status:</strong> <span>On-chain</span>
+            </div>
+
+            {mon.blockchain && (
+              <div className="nft-info-row">
+                <strong>Blockchain:</strong> <span>{mon.blockchain}</span>
+              </div>
+            )}
+
+            {mon.nftTokenId && (
+              <div className="nft-info-row">
+                <strong>Token ID:</strong> <span>{mon.nftTokenId}</span>
+              </div>
+            )}
+
+            {mon.contractAddress && (
+              <div className="nft-info-row">
+                <strong>Contract:</strong> <span>{mon.contractAddress}</span>
+              </div>
+            )}
+
+            {explorerURL && (
+              <div className="nft-explorer">
+                <a
+                  href={explorerURL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="explorer-btn"
+                >
+                  VIEW ON BLOCK EXPLORER
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- BASE STATS --- */}
         <div className="stats-section">
           <h3>BASE STATS</h3>
           <div className="stats-list">
@@ -72,6 +140,7 @@ export default function PokemonStatsModal({ mon, close }) {
           </div>
         </div>
 
+        {/* --- MOVES --- */}
         <div className="stats-section">
           <h3>MOVES</h3>
           <div className="moves-grid">
@@ -81,7 +150,7 @@ export default function PokemonStatsModal({ mon, close }) {
                 className="move-card"
                 onClick={() => fetchMoveDetails(m)}
                 style={{
-                  background: typeColors[m.type] || "#306230",
+                  background: "#306230",
                   cursor: "pointer",
                 }}
               >
@@ -91,6 +160,7 @@ export default function PokemonStatsModal({ mon, close }) {
           </div>
         </div>
 
+        {/* --- MOVE DETAILS POPUP --- */}
         {moveDetails && (
           <div
             className="move-details-overlay"

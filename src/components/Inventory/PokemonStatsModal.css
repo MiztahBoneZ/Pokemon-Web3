@@ -96,7 +96,7 @@
   padding: 8px;
   text-align: center;
   font-size: 12px;
-  color: #0f380f;
+  color: #9bbc0f;
   font-weight: bold;
   cursor: pointer;
   transition: transform 0.1s;
@@ -140,4 +140,33 @@
 
 .move-details-box p {
   margin: 4px 0;
+}
+
+.nft-section {
+  border: 3px solid #9bbc0f;
+  padding: 10px;
+  margin-bottom: 15px;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.nft-info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.explorer-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  background: #ffd700;
+  color: #000;
+  text-decoration: none;
+  border: 1px solid #b8860b;
+}
+
+.explorer-btn:hover {
+  background: #f0c400;
 }

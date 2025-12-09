@@ -7,6 +7,7 @@ import RegisterPage from "./components/auth/RegisterPage";
 import OnboardingPage from "./components/auth/Onboardpage";
 import GamePage from "./components/Main/GamePage";
 import AllPokemon from "./components/Inventory/AllPokemon";
+import TeamSelect from "./components/TeamSelect/TeamSelect";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -40,6 +41,10 @@ function App() {
       <Route
         path="/game/pokemon"
         element={user ? <AllPokemon /> : <Navigate to="/" />}
+      />
+      <Route
+        path="/game/teamselect"
+        element={user ? <TeamSelect /> : <Navigate to="/" />}
       />
     </Routes>
   );

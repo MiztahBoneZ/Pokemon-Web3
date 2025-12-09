@@ -129,3 +129,17 @@
   margin: 24px auto 0;
   text-align: center;
 }
+
+.nft-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #ffd700;
+  color: #000;
+  font-weight: bold;
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid #b8860b;
+  box-shadow: 0 0 4px rgba(255, 215, 0, 0.7);
+}

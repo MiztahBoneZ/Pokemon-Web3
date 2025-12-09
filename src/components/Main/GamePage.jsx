@@ -7,8 +7,6 @@ import "./GamePage.css";
 export default function GamePage() {
   const navigate = useNavigate();
   const user = auth.currentUser;
-  const [showGame, setShowGame] = useState(false);
-  const [phaserGame, setPhaserGame] = useState(null);
 
   const handleSignOut = async () => {
     try {
@@ -35,7 +33,9 @@ export default function GamePage() {
         <h1 className="menu-title">Pokémon Roguelike</h1>
         <div className="menu-buttons">
           <button onClick={handleStartGame}>Start</button>
-          <button>Current Team</button>
+          <button onClick={() => navigate("/game/teamselect")}>
+            Current Team
+          </button>
           <button onClick={() => navigate("/game/pokemon")}>Pokémons</button>
           <button>Trade</button>
         </div>

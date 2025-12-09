@@ -1,0 +1,177 @@
+.team-select-container {
+  width: 100%;
+  padding: 20px;
+}
+
+.team-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.team-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.team-slot-filled,
+.team-slot-empty {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  border: 2px solid #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  position: relative;
+}
+
+.team-slot-filled img {
+  width: 60%;
+}
+
+.team-slot-name {
+  position: absolute;
+  bottom: -18px;
+  font-size: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+.team-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.team-card {
+  border: 3px solid #555;
+  border-radius: 10px;
+  padding: 10px;
+  background: #1a1a1a;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+.team-card:hover {
+  transform: scale(1.05);
+}
+
+.selected {
+  box-shadow: 0 0 10px gold;
+}
+
+.team-sprite {
+  width: 100%;
+}
+
+.team-info {
+  text-align: center;
+  margin-top: 5px;
+}
+
+.team-name {
+  font-size: 14px;
+  margin: 0;
+}
+
+.team-types {
+  margin-top: 5px;
+}
+
+.type-pill {
+  padding: 3px 6px;
+  margin-right: 4px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #000;
+  font-weight: bold;
+}
+
+.team-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: limegreen;
+  color: #000;
+  padding: 3px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.nft-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: gold;
+  color: #000;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.team-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.team-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin: 0 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.confirm {
+  background: #4caf50;
+}
+
+.cancel {
+  background: #b33a3a;
+  color: #fff;
+}
+
+.team-btn:disabled {
+  background: #777;
+  cursor: not-allowed;
+}
+
+.team-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: fadeinout 3s ease forwards;
+}
+
+@keyframes fadeinout {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}
