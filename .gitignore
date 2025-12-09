@@ -25,5 +25,5 @@ dist-ssr
 
 # Firebase config
 #src/Core/firebase.js
-
 .env
+PokeNFT.sol

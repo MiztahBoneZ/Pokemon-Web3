@@ -21,7 +21,6 @@ export default function RegisterPage() {
       await createUserWithEmailAndPassword(auth, email, password);
       alert("Registration successful!");
 
-      // Proceed to wallet connection
       await connectWallet();
 
       navigate("/onboarding");
@@ -46,9 +45,6 @@ export default function RegisterPage() {
 
       setWalletAddress(address);
       alert(`Wallet connected: ${address}`);
-
-      // (Optional) Save wallet address to Firebase user profile or Firestore
-      // Example: await setDoc(doc(db, "users", user.uid), { wallet: address });
 
       setIsConnecting(false);
     } catch (err) {
@@ -81,7 +77,9 @@ export default function RegisterPage() {
           />
 
           <button type="submit" disabled={isConnecting}>
-            {isConnecting ? "Connecting Wallet..." : "Register & Connect Wallet"}
+            {isConnecting
+              ? "Connecting Wallet..."
+              : "Register & Connect Wallet"}
           </button>
 
           {walletAddress && (

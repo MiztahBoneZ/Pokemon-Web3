@@ -2,8 +2,17 @@ import React, { useState } from "react";
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../Core/firebase";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDocs,
+  collection,
+} from "firebase/firestore";
 import "./OnboardingStyle.css";
+
+import PokemonNFTABI from "../PokemonNFT.json";
+const CONTRACT_ADDRESS = "0x1f9BB565bea73CE6C86aE59Ae7127d5c84649acB";
 
 export default function OnboardingPage() {
   const [walletAddress, setWalletAddress] = useState("");
@@ -15,6 +24,9 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [pokemonNickname, setPokemonNickname] = useState("");
   const [showNicknameInput, setShowNicknameInput] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
+  const [nftTokenId, setNftTokenId] = useState(null);
+  const [mintingStatus, setMintingStatus] = useState("");
   const navigate = useNavigate();
   const db = getFirestore();
 
@@ -33,7 +45,7 @@ export default function OnboardingPage() {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      alert("MetaMask not detected. Please install MetaMask.");
+      alert("MetaMask not detected. Please install MetaMask extension.");
       return;
     }
     try {
@@ -42,19 +54,158 @@ export default function OnboardingPage() {
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
+
+      // Check if on Sepolia network
+      const network = await provider.getNetwork();
+      if (network.chainId !== 11155111n) {
+        alert("Please switch to Sepolia test network in MetaMask!");
+        setIsConnecting(false);
+        return;
+      }
+
       setWalletAddress(address);
       setIsConnecting(false);
       setCurrentStep(2);
     } catch (err) {
       console.error(err);
       setIsConnecting(false);
-      alert("Failed to connect wallet.");
+      alert("Failed to connect wallet. Make sure MetaMask is unlocked.");
+    }
+  };
+
+  // Simple metadata creation (no IPFS for now - use data URI)
+  const createMetadataURI = (metadata) => {
+    const nftMetadata = {
+      name: `${metadata.name.charAt(0).toUpperCase() + metadata.name.slice(1)}${
+        metadata.isShiny ? " ✨" : ""
+      }`,
+      description: `A ${metadata.rarity} ${
+        metadata.isShiny ? "Shiny " : ""
+      }Pokémon! Hatched with unique stats and moves.`,
+      image: metadata.sprite,
+      external_url: `https://pokeapi.co/api/v2/pokemon/${metadata.pokemonId}`,
+      attributes: [
+        { trait_type: "Pokemon ID", value: metadata.pokemonId },
+        { trait_type: "Rarity", value: metadata.rarity },
+        { trait_type: "Shiny", value: metadata.isShiny ? "Yes" : "No" },
+        { trait_type: "Types", value: metadata.types.join(", ") },
+        { trait_type: "HP", value: metadata.stats.hp },
+        { trait_type: "Attack", value: metadata.stats.attack },
+        { trait_type: "Defense", value: metadata.stats.defense },
+        {
+          trait_type: "Special Attack",
+          value: metadata.stats["special-attack"],
+        },
+        {
+          trait_type: "Special Defense",
+          value: metadata.stats["special-defense"],
+        },
+        { trait_type: "Speed", value: metadata.stats.speed },
+        ...metadata.moves.map((move, idx) => ({
+          trait_type: `Move ${idx + 1}`,
+          value: move.replace("-", " "),
+        })),
+      ],
+    };
+
+    // Create data URI (for testing - in production use IPFS)
+    const jsonString = JSON.stringify(nftMetadata);
+    const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+    return `data:application/json;base64,${base64}`;
+  };
+
+  const mintNFT = async (pokemonData) => {
+    try {
+      setIsMinting(true);
+      setMintingStatus("Preparing metadata...");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        PokemonNFTABI.abi,
+        signer
+      );
+
+      setMintingStatus("Creating token URI...");
+      const tokenURI = createMetadataURI(pokemonData);
+
+      setMintingStatus("Sending transaction to blockchain...");
+      console.log("Minting NFT with data:", {
+        to: walletAddress,
+        pokemonId: pokemonData.pokemonId,
+        name: pokemonData.name,
+        rarity: pokemonData.rarity,
+        isShiny: pokemonData.isShiny,
+      });
+
+      // Call the smart contract mint function
+      const tx = await contract.mintPokemon(
+        walletAddress,
+        tokenURI,
+        pokemonData.pokemonId,
+        pokemonData.name,
+        pokemonData.nickname || "",
+        pokemonData.rarity,
+        pokemonData.isShiny
+      );
+
+      console.log("Transaction sent:", tx.hash);
+      setMintingStatus("Waiting for confirmation...");
+
+      // Wait for transaction to be mined
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed!", receipt);
+
+      setMintingStatus("Extracting token ID...");
+
+      // Extract tokenId from event logs
+      let tokenId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = contract.interface.parseLog(log);
+          if (parsed && parsed.name === "PokemonMinted") {
+            tokenId = parsed.args.tokenId.toString();
+            console.log("Found NFT Token ID:", tokenId);
+            break;
+          }
+        } catch (e) {
+          // Skip logs that don't match
+          continue;
+        }
+      }
+
+      if (tokenId !== null) {
+        setNftTokenId(tokenId);
+      }
+
+      setMintingStatus("Success!");
+      setIsMinting(false);
+
+      return { tokenId, txHash: tx.hash };
+    } catch (error) {
+      console.error("NFT minting failed:", error);
+      setIsMinting(false);
+      setMintingStatus("");
+
+      // User-friendly error messages
+      if (error.code === "ACTION_REJECTED") {
+        throw new Error("You rejected the transaction in MetaMask");
+      } else if (error.message.includes("insufficient funds")) {
+        throw new Error(
+          "Not enough ETH for gas fees. Get testnet ETH from a faucet!"
+        );
+      } else if (error.message.includes("wrong network")) {
+        throw new Error("Please switch to Sepolia test network in MetaMask");
+      } else {
+        throw new Error(error.reason || error.message || "Minting failed");
+      }
     }
   };
 
   const hatchPokemon = async () => {
     if (!walletAddress) {
-      alert("Connect wallet first.");
+      alert("Please connect your wallet first!");
       return;
     }
 
@@ -62,8 +213,12 @@ export default function OnboardingPage() {
     setShowEggAnimation(true);
 
     try {
+      // Egg hatching animation
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
+      console.log("Generating random Pokémon...");
+
+      // Generate random Pokémon
       const randomId = Math.floor(Math.random() * 151) + 1;
       const isShiny = Math.random() < 0.01; // 1% shiny chance
 
@@ -113,6 +268,13 @@ export default function OnboardingPage() {
         createdAt: new Date().toISOString(),
       };
 
+      console.log(
+        "Pokémon generated:",
+        hatchedPokemon.name,
+        "Rarity:",
+        hatchedPokemon.rarity
+      );
+
       setShowEggAnimation(false);
       setPokemon(hatchedPokemon);
       setShowConfetti(true);
@@ -120,9 +282,16 @@ export default function OnboardingPage() {
 
       setTimeout(() => setShowConfetti(false), 3000);
 
-      const user = auth.currentUser;
+      // Mint the NFT on blockchain
+      console.log("Starting blockchain mint...");
+      const { tokenId, txHash } = await mintNFT(hatchedPokemon);
+      console.log("NFT minted! Token ID:", tokenId, "Tx:", txHash);
 
+      // Store in Firebase with NFT reference
+      const user = auth.currentUser;
       if (user) {
+        console.log("Saving to Firebase...");
+
         const userRef = doc(db, "users", user.uid);
         await setDoc(
           userRef,
@@ -134,17 +303,35 @@ export default function OnboardingPage() {
           { merge: true }
         );
 
-        const pokemonId = crypto.randomUUID();
-        const inventoryRef = doc(db, "users", user.uid, "inventory", pokemonId);
+        const pokemonFirebaseId = crypto.randomUUID();
+        const inventoryRef = doc(
+          db,
+          "users",
+          user.uid,
+          "inventory",
+          pokemonFirebaseId
+        );
 
-        await setDoc(inventoryRef, hatchedPokemon);
+        await setDoc(inventoryRef, {
+          ...hatchedPokemon,
+          nftTokenId: tokenId,
+          nftTxHash: txHash,
+          contractAddress: CONTRACT_ADDRESS,
+          onChain: true,
+          blockchain: "sepolia",
+        });
+
+        console.log("Saved to Firebase successfully!");
       }
     } catch (error) {
-      console.error("Hatching failed:", error);
-      alert("Hatching failed. Please try again.");
+      console.error("Hatching/Minting failed:", error);
+      alert(`Failed to hatch Pokémon: ${error.message}`);
       setShowEggAnimation(false);
+      setPokemon(null);
+      setShowConfetti(false);
     } finally {
       setIsHatching(false);
+      setMintingStatus("");
     }
   };
 
@@ -154,22 +341,71 @@ export default function OnboardingPage() {
       return;
     }
 
-    const updatedPokemon = { ...pokemon, nickname: pokemonNickname };
-    setPokemon(updatedPokemon);
+    try {
+      setIsMinting(true);
+      setMintingStatus("Updating nickname on blockchain...");
 
-    const user = auth.currentUser;
-    if (user) {
-      const inventoryRef = doc(
-        db,
-        "users",
-        user.uid,
-        "inventory",
-        pokemon.pokemonId
-      );
-      await setDoc(inventoryRef, updatedPokemon, { merge: true });
+      // Update nickname on blockchain if NFT exists
+      if (nftTokenId) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          PokemonNFTABI.abi,
+          signer
+        );
+
+        console.log(
+          "Updating nickname for token",
+          nftTokenId,
+          "to",
+          pokemonNickname
+        );
+        const tx = await contract.updateNickname(nftTokenId, pokemonNickname);
+
+        setMintingStatus("Waiting for confirmation...");
+        await tx.wait();
+
+        console.log("Nickname updated on-chain!");
+      }
+
+      const updatedPokemon = { ...pokemon, nickname: pokemonNickname };
+      setPokemon(updatedPokemon);
+
+      // Update Firebase
+      const user = auth.currentUser;
+      if (user) {
+        const inventorySnapshot = await getDocs(
+          collection(db, "users", user.uid, "inventory")
+        );
+        const pokemonDoc = inventorySnapshot.docs.find(
+          (doc) => doc.data().nftTokenId === nftTokenId
+        );
+
+        if (pokemonDoc) {
+          await setDoc(
+            doc(db, "users", user.uid, "inventory", pokemonDoc.id),
+            { nickname: pokemonNickname },
+            { merge: true }
+          );
+          console.log("Nickname updated in Firebase");
+        }
+      }
+
+      setShowNicknameInput(false);
+      setIsMinting(false);
+      setMintingStatus("");
+    } catch (error) {
+      console.error("Failed to save nickname:", error);
+      setIsMinting(false);
+      setMintingStatus("");
+
+      if (error.code === "ACTION_REJECTED") {
+        alert("You cancelled the transaction");
+      } else {
+        alert(`Failed to update nickname: ${error.message}`);
+      }
     }
-
-    setShowNicknameInput(false);
   };
 
   const getTypeColor = (type) => {
@@ -214,6 +450,17 @@ export default function OnboardingPage() {
         </div>
       )}
 
+      {isMinting && (
+        <div className="minting-overlay">
+          <div className="minting-modal">
+            <div className="spinner"></div>
+            <h3>{mintingStatus || "Processing..."}</h3>
+            <p>Please confirm the transaction in MetaMask</p>
+            <p className="minting-note">This may take 15-30 seconds</p>
+          </div>
+        </div>
+      )}
+
       <div className="onboarding-container">
         <h1 className="main-title">🎮 Trainer Onboarding</h1>
 
@@ -233,7 +480,7 @@ export default function OnboardingPage() {
             }`}
           >
             <div className="step-circle">2</div>
-            <span>Hatch Pokémon</span>
+            <span>Hatch NFT</span>
           </div>
           <div className="step-line"></div>
           <div className={`step ${currentStep >= 3 ? "active" : ""}`}>
@@ -247,6 +494,9 @@ export default function OnboardingPage() {
             <h2>🔗 Connect Your Wallet</h2>
             <p className="step-description">
               Connect your MetaMask wallet to begin your journey
+            </p>
+            <p className="network-warning">
+              ⚠️ Make sure you're on Sepolia test network
             </p>
             <button
               className="primary-button"
@@ -273,10 +523,14 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              <h2>Hatch Your Starter</h2>
+              <h2>Hatch Your Starter NFT</h2>
               <p className="step-description">
-                Click the egg to hatch your random starter Pokémon! Every
-                trainer gets a unique Pokémon to start their adventure.
+                Click the egg to hatch your random starter Pokémon! It will be
+                minted as an NFT on the blockchain.
+              </p>
+              <p className="network-warning">
+                ⚠️ Requires testnet ETH for gas. Get free ETH from faucets if
+                needed!
               </p>
             </div>
 
@@ -319,6 +573,19 @@ export default function OnboardingPage() {
                 )}
                 Congratulations!
               </h2>
+              {nftTokenId && (
+                <div className="nft-badge">
+                  🎫 NFT Token ID: #{nftTokenId}
+                  <a
+                    href={`https://testnets.opensea.io/assets/sepolia/${CONTRACT_ADDRESS}/${nftTokenId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginLeft: "10px", fontSize: "12px" }}
+                  >
+                    View on OpenSea ↗
+                  </a>
+                </div>
+              )}
               <div
                 className="pokemon-card"
                 style={{
@@ -410,8 +677,9 @@ export default function OnboardingPage() {
                   <button
                     className="secondary-button"
                     onClick={() => setShowNicknameInput(true)}
+                    disabled={isMinting}
                   >
-                    Give Nickname
+                    Give Nickname (Updates Blockchain)
                   </button>
                 ) : (
                   <div className="nickname-input-container">
@@ -423,12 +691,17 @@ export default function OnboardingPage() {
                       maxLength={12}
                       className="nickname-input"
                     />
-                    <button className="small-button" onClick={saveNickname}>
-                      Save
+                    <button
+                      className="small-button"
+                      onClick={saveNickname}
+                      disabled={isMinting}
+                    >
+                      {isMinting ? "Saving..." : "Save"}
                     </button>
                     <button
                       className="small-button cancel"
                       onClick={() => setShowNicknameInput(false)}
+                      disabled={isMinting}
                     >
                       Cancel
                     </button>
