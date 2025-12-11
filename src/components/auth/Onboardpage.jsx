@@ -55,7 +55,7 @@ export default function OnboardingPage() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Check if on Sepolia network
+      // Ensure asa sepolia para walang bayad
       const network = await provider.getNetwork();
       if (network.chainId !== 11155111n) {
         alert("Please switch to Sepolia test network in MetaMask!");
@@ -170,7 +170,6 @@ export default function OnboardingPage() {
             break;
           }
         } catch (e) {
-          // Skip logs that don't match
           continue;
         }
       }
@@ -213,12 +212,10 @@ export default function OnboardingPage() {
     setShowEggAnimation(true);
 
     try {
-      // Egg hatching animation
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       console.log("Generating random Pokémon...");
 
-      // Generate random Pokémon
       const randomId = Math.floor(Math.random() * 151) + 1;
       const isShiny = Math.random() < 0.01; // 1% shiny chance
 
@@ -282,7 +279,6 @@ export default function OnboardingPage() {
 
       setTimeout(() => setShowConfetti(false), 3000);
 
-      // Mint the NFT on blockchain
       console.log("Starting blockchain mint...");
       const { tokenId, txHash } = await mintNFT(hatchedPokemon);
       console.log("NFT minted! Token ID:", tokenId, "Tx:", txHash);
@@ -496,7 +492,7 @@ export default function OnboardingPage() {
               Connect your MetaMask wallet to begin your journey
             </p>
             <p className="network-warning">
-              ⚠️ Make sure you're on Sepolia test network
+              Make sure you're on Sepolia test network
             </p>
             <button
               className="primary-button"
@@ -529,7 +525,7 @@ export default function OnboardingPage() {
                 minted as an NFT on the blockchain.
               </p>
               <p className="network-warning">
-                ⚠️ Requires testnet ETH for gas. Get free ETH from faucets if
+                Requires testnet ETH for gas. Get free ETH from faucets if
                 needed!
               </p>
             </div>

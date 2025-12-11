@@ -38,7 +38,6 @@ export default function RegisterPage() {
 
       setIsConnecting(true);
 
-      // Request wallet connection
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       const address = accounts[0];

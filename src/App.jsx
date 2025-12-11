@@ -10,23 +10,20 @@ import GamePage from "./components/Main/GamePage";
 import AllPokemon from "./components/Inventory/AllPokemon";
 import TeamSelect from "./components/TeamSelect/TeamSelect";
 
-// Protected route for authenticated users
 function ProtectedRoute({ user, children, redirectTo = "/" }) {
   if (!user) return <Navigate to={redirectTo} />;
   return children;
 }
 
-// Route for login/register pages
 function AuthRedirectRoute({ user, children, redirectTo = "/game" }) {
   if (user) return <Navigate to={redirectTo} />;
   return children;
 }
 
-// Fully protected onboarding route
 function OnboardingRoute({ user, onboarded, children }) {
-  if (!user) return <Navigate to="/" />; // not logged in
-  if (onboarded) return <Navigate to="/game" />; // already onboarded
-  return children; // allowed
+  if (!user) return <Navigate to="/" />;
+  if (onboarded) return <Navigate to="/game" />;
+  return children;
 }
 
 function App() {
