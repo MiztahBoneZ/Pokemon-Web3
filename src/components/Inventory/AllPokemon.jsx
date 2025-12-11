@@ -1,38 +1,91 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ethers } from "ethers";
 import { auth, frdb } from "../../Core/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import PokemonNFTABI from "../PokemonNFT.json";
 import "./AllPokemon.css";
 import PokemonStatsModal from "./PokemonStatsModal.jsx";
+
+const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
 export default function AllPokemon({ back }) {
   const navigate = useNavigate();
   const [monList, setMonList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMon, setSelectedMon] = useState(null);
+  const [listingStatuses, setListingStatuses] = useState({});
 
   useEffect(() => {
-    (async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+    loadPokemon();
+  }, []);
 
-      const snap = await getDocs(
-        collection(frdb, "users", user.uid, "inventory")
+  const loadPokemon = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const snap = await getDocs(
+      collection(frdb, "users", user.uid, "inventory")
+    );
+
+    const sorted = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const A = a.createdAt || "";
+        const B = b.createdAt || "";
+        return B.localeCompare(A);
+      });
+
+    setMonList(sorted);
+
+    // Check listing status for NFTs
+    if (window.ethereum) {
+      await checkListingStatuses(sorted);
+    }
+
+    setLoading(false);
+  };
+
+  const checkListingStatuses = async (pokemon) => {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        PokemonNFTABI.abi,
+        provider
       );
 
-      // Sort newest → oldest
-      const sorted = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => {
-          const A = a.createdAt || "";
-          const B = b.createdAt || "";
-          return B.localeCompare(A);
-        });
+      const statuses = {};
 
-      setMonList(sorted);
-      setLoading(false);
-    })();
-  }, []);
+      for (const mon of pokemon) {
+        if (mon.onChain && mon.nftTokenId) {
+          try {
+            const listing = await contract.getListing(mon.nftTokenId);
+            if (listing.isActive) {
+              statuses[mon.id] = {
+                isListed: true,
+                price: listing.price.toString(),
+              };
+            }
+          } catch (error) {
+            console.error(
+              `Error checking listing for ${mon.nftTokenId}:`,
+              error
+            );
+          }
+        }
+      }
+
+      setListingStatuses(statuses);
+    } catch (error) {
+      console.error("Error checking listing statuses:", error);
+    }
+  };
+
+  const handleListingChange = () => {
+    // Reload pokemon and their listing statuses
+    loadPokemon();
+  };
 
   const getTypeColor = (t) =>
     ({
@@ -71,7 +124,6 @@ export default function AllPokemon({ back }) {
         <button className="top-back-btn" onClick={() => navigate(-1)}>
           GO BACK
         </button>
-
         <h2 className="top-title">POKéMON STORAGE</h2>
       </div>
 
@@ -80,20 +132,33 @@ export default function AllPokemon({ back }) {
           {monList.length ? (
             monList.map((m) => {
               const types = Array.isArray(m.types) ? m.types : ["normal"];
+              const isListed = listingStatuses[m.id]?.isListed;
+              const listingPrice = listingStatuses[m.id]?.price;
+
               return (
                 <div
                   key={m.id}
-                  className={`poke-card ${m.isShiny ? "shiny" : ""}`}
+                  className={`poke-card ${m.isShiny ? "shiny" : ""} ${
+                    isListed ? "listed" : ""
+                  }`}
                   style={{ borderColor: getTypeColor(types[0]) }}
                   onClick={() => setSelectedMon(m)}
                 >
-                  {/* NFT badge */}
-                  {m.onChain && <div className="nft-badge">NFT</div>}
+                  {/* Badges Container */}
+                  <div className="badges-container">
+                    {/* NFT badge */}
+                    {m.onChain && <div className="nft-badge">NFT</div>}
+
+                    {/* Listed badge */}
+                    {isListed && (
+                      <div className="listed-badge">
+                        🏷️ {ethers.formatEther(listingPrice)} ETH
+                      </div>
+                    )}
+                  </div>
 
                   <img src={m.sprite} alt={m.name} />
-
                   <div className="poke-name">{formatName(m)}</div>
-
                   <div className="poke-types">
                     {types.map((t) => (
                       <span
@@ -105,7 +170,6 @@ export default function AllPokemon({ back }) {
                       </span>
                     ))}
                   </div>
-
                   <div className="poke-rarity">{m.rarity}</div>
                 </div>
               );
@@ -120,6 +184,7 @@ export default function AllPokemon({ back }) {
         <PokemonStatsModal
           mon={selectedMon}
           close={() => setSelectedMon(null)}
+          onListingChange={handleListingChange}
         />
       )}
     </div>

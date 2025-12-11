@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, frdb } from "./Core/firebase";
+import { auth } from "./Core/firebase";
 import LoginPage from "./components/auth/LoginPage";
 import RegisterPage from "./components/auth/RegisterPage";
 import OnboardingPage from "./components/auth/Onboardpage";
@@ -10,38 +9,13 @@ import GamePage from "./components/Main/GamePage";
 import AllPokemon from "./components/Inventory/AllPokemon";
 import TeamSelect from "./components/TeamSelect/TeamSelect";
 
-function ProtectedRoute({ user, children, redirectTo = "/" }) {
-  if (!user) return <Navigate to={redirectTo} />;
-  return children;
-}
-
-function AuthRedirectRoute({ user, children, redirectTo = "/game" }) {
-  if (user) return <Navigate to={redirectTo} />;
-  return children;
-}
-
-function OnboardingRoute({ user, onboarded, children }) {
-  if (!user) return <Navigate to="/" />;
-  if (onboarded) return <Navigate to="/game" />;
-  return children;
-}
-
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [onboarded, setOnboarded] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        const docRef = doc(frdb, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setOnboarded(data.hasCompletedOnboarding || false);
-        }
-      }
       setLoading(false);
     });
     return unsubscribe;
@@ -53,51 +27,24 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={
-          <AuthRedirectRoute user={user}>
-            <LoginPage />
-          </AuthRedirectRoute>
-        }
+        element={user ? <Navigate to="/game" /> : <LoginPage />}
       />
       <Route
         path="/register"
-        element={
-          <AuthRedirectRoute user={user} redirectTo="/onboarding">
-            <RegisterPage />
-          </AuthRedirectRoute>
-        }
+        element={user ? <Navigate to="/onboarding" /> : <RegisterPage />}
       />
       <Route
         path="/onboarding"
-        element={
-          <OnboardingRoute user={user} onboarded={onboarded}>
-            <OnboardingPage />
-          </OnboardingRoute>
-        }
+        element={user ? <OnboardingPage /> : <Navigate to="/" />}
       />
-      <Route
-        path="/game"
-        element={
-          <ProtectedRoute user={user}>
-            <GamePage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/game" element={user ? <GamePage /> : <Navigate to="/" />} />
       <Route
         path="/game/pokemon"
-        element={
-          <ProtectedRoute user={user}>
-            <AllPokemon />
-          </ProtectedRoute>
-        }
+        element={user ? <AllPokemon /> : <Navigate to="/" />}
       />
       <Route
         path="/game/teamselect"
-        element={
-          <ProtectedRoute user={user}>
-            <TeamSelect />
-          </ProtectedRoute>
-        }
+        element={user ? <TeamSelect /> : <Navigate to="/" />}
       />
     </Routes>
   );

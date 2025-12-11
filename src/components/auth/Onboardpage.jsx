@@ -12,7 +12,7 @@ import {
 import "./OnboardingStyle.css";
 
 import PokemonNFTABI from "../PokemonNFT.json";
-const CONTRACT_ADDRESS = "0x1f9BB565bea73CE6C86aE59Ae7127d5c84649acB";
+const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
 export default function OnboardingPage() {
   const [walletAddress, setWalletAddress] = useState("");

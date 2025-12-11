@@ -15,7 +15,7 @@ export default function TeamSelect({
 }) {
   const [monList, setMonList] = useState([]);
   const [team, setTeam] = useState([]);
-  const [toastMessage, setToastMessage] = useState(""); // <-- toast state
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -90,7 +90,7 @@ export default function TeamSelect({
         updatedAt: serverTimestamp(),
       });
 
-      showToast("Team updated!"); // show toast
+      showToast("Team updated!");
       onConfirm(team);
     } catch (err) {
       console.error("Failed to save active team:", err);
