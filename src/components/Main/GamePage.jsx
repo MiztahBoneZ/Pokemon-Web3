@@ -17,10 +17,6 @@ export default function GamePage() {
     }
   };
 
-  const handleStartGame = () => {
-    setShowGame(true);
-  };
-
   return (
     <div className="gamepage-container">
       <div className="user-card">
@@ -29,14 +25,17 @@ export default function GamePage() {
           Sign Out
         </button>
       </div>
+      <h1 className="menu-title">Pokémon Roguelike</h1>
       <div className="menu-container">
-        <h1 className="menu-title">Pokémon Roguelike</h1>
         <div className="menu-buttons">
-          <button onClick={handleStartGame}>Start</button>
+          <button>Start</button>
           <button onClick={() => navigate("/game/teamselect")}>
             Current Team
           </button>
           <button onClick={() => navigate("/game/pokemon")}>Pokémons</button>
+          <button onClick={() => navigate("/game/marketplace")}>
+            Marketplace
+          </button>
           <button>Trade</button>
         </div>
       </div>

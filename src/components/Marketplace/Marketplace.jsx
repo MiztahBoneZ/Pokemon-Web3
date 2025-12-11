@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 import {
   getFirestore,
@@ -20,6 +21,7 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("newest");
   const [filterRarity, setFilterRarity] = useState("all");
   const db = getFirestore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkWalletConnection();
@@ -266,26 +268,32 @@ export default function Marketplace() {
           (rarityOrder[a.pokemon.rarity] || 0)
         );
       }
-      return b.pokemon.createdAt - a.pokemon.createdAt; // newest first
+      return b.pokemon.createdAt - a.pokemon.createdAt;
     });
 
   return (
     <div className="marketplace-container">
-      <header className="marketplace-header">
-        <h1>🏪 Pokémon Marketplace</h1>
-        <p className="subtitle">Buy and sell Pokémon NFTs</p>
+      <button className="back-btn" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
 
-        {!walletAddress ? (
-          <button className="connect-wallet-btn" onClick={connectWallet}>
-            Connect Wallet to Buy
-          </button>
-        ) : (
-          <div className="wallet-info">
-            <span className="wallet-badge">
-              ✓ {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-            </span>
-          </div>
-        )}
+      <header className="marketplace-header">
+        <h1>Pokémon Marketplace</h1>
+        <p className="subtitle">Buy and sell your friends</p>
+
+        <div className="wallet-controls">
+          {!walletAddress ? (
+            <button className="connect-wallet-btn" onClick={connectWallet}>
+              Connect Wallet to Buy
+            </button>
+          ) : (
+            <div className="wallet-info">
+              <span className="wallet-badge">
+                ✓ {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              </span>
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="marketplace-controls">

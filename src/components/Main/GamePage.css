@@ -1,12 +1,15 @@
-/* ===== 8-BIT RPG GAME-PAGE SKIN ===== */
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
 * {
   box-sizing: border-box;
   image-rendering: pixelated;
+  margin: 0;
+  padding: 0;
 }
 
-/* 1.  page shell – Game-Boy greens instead of blue gradient */
+/* ============================================
+   PAGE CONTAINER
+============================================ */
 .gamepage-container {
   height: 100vh;
   width: 100vw;
@@ -14,14 +17,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   position: relative;
-  color: #9bbc0f; /* light green text */
+  color: #9bbc0f;
   font-family: "Press Start 2P", cursive;
   overflow: hidden;
-  border: 4px solid #306230; /* pixel border around whole view */
+  border: 4px solid #306230;
 }
 
-/* 2.  user card – pixel window */
+/* ============================================
+   USER CARD
+============================================ */
 .user-card {
   position: absolute;
   top: 12px;
@@ -35,7 +41,7 @@
 }
 
 .username {
-  margin: 0 0 6px;
+  margin-bottom: 6px;
 }
 
 .signout-btn {
@@ -48,53 +54,82 @@
   cursor: pointer;
   transition: none;
 }
+
 .signout-btn:hover {
   background: #b83838;
   transform: translate(1px, 1px);
 }
 
-/* 3.  menu container */
+/* ============================================
+   MENU CONTAINER
+============================================ */
 .menu-container {
   text-align: center;
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .menu-title {
-  font-size: 18px; /* was 36 */
+  font-size: 18px;
   margin-bottom: 20px;
-  color: #ffcb05; /* Pokémon yellow */
+  color: #ffcb05;
   text-shadow: 2px 2px 0 #306230;
+  letter-spacing: 1px;
 }
 
 .menu-buttons {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
+  flex-direction: column; /* vertical layout */
+  align-items: center; /* center horizontally */
+  gap: 12px; /* space between buttons */
+  margin-top: 12px;
 }
 
-/* 4.  pixel menu buttons */
 .menu-buttons button {
-  width: 144px; /* was 160 */
-  padding: 10px;
+  width: 200px; /* slightly wider for vertical layout */
+  padding: 12px 10px;
   background: #ffcb05;
   color: #0f380f;
   border: 3px solid #c7a008;
   border-radius: 0;
   font-family: "Press Start 2P", cursive;
-  font-size: 10px; /* was 16 */
+  font-size: 10px;
   cursor: pointer;
   transition: none;
+  box-shadow: 3px 3px 0 #1a2f1a;
 }
+
 .menu-buttons button:hover {
   background: #f5b700;
   transform: translate(2px, 2px);
 }
 
-/* 5.  phaser canvas frame */
-#phaser-container {
-  margin-top: 20px;
-  border: 4px solid #9bbc0f;
-  box-shadow: 4px 4px 0 #306230;
-  background: #000; /* keeps canvas black */
+/* ============================================
+   OPTIONAL IMPROVEMENTS
+   - Highlight currently hovered button
+   - Add subtle glow on title
+============================================ */
+.menu-title {
+  text-shadow: 2px 2px 0 #306230, 0 0 4px #ffcb05;
+}
+
+.menu-buttons button:active {
+  transform: translate(1px, 1px);
+}
+
+/* ============================================
+   RESPONSIVENESS
+============================================ */
+@media (max-width: 500px) {
+  .menu-buttons button {
+    width: 120px;
+    padding: 8px;
+    font-size: 9px;
+  }
+
+  .menu-title {
+    font-size: 16px;
+  }
 }
