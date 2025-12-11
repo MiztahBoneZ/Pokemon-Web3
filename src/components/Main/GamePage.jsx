@@ -25,7 +25,7 @@ export default function GamePage() {
           Sign Out
         </button>
       </div>
-      <h1 className="menu-title">Pokémon Roguelike</h1>
+      <h1 className="menu-title">Games</h1>
       <div className="menu-container">
         <div className="menu-buttons">
           <button>Start</button>
@@ -36,7 +36,7 @@ export default function GamePage() {
           <button onClick={() => navigate("/game/marketplace")}>
             Marketplace
           </button>
-          <button>Trade</button>
+          <button onClick={() => alert("Coming Soon")}>Trade</button>
         </div>
       </div>
     </div>

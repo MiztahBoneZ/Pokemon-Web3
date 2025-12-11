@@ -3,27 +3,22 @@
 * {
   box-sizing: border-box;
   image-rendering: pixelated;
+  margin: 0;
+  padding: 0;
 }
 
-/* ============================================
-   PAGE CONTAINER
-============================================ */
 .all-poke-page {
-  min-height: 100vh;
   width: 100vw;
-  background: #0f380f; /* dark green */
-  color: #9bbc0f; /* light green text */
+  min-height: 100vh;
+  background: #0f380f; /* darkest green */
+  color: #9bbc0f;
   font-family: "Press Start 2P", cursive;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  overflow-x: hidden;
 }
 
-/* ============================================
-   TOP HEADER
-============================================ */
 .top-header {
   width: 100%;
   display: flex;
@@ -32,169 +27,146 @@
   margin-bottom: 20px;
 }
 
-.top-title {
-  font-size: 16px;
-  color: #ffcb05;
-  text-shadow: 2px 2px 0 #0f380f;
-}
-
 .top-back-btn {
-  background: #ffcb05;
-  color: #0f380f;
-  border: 3px solid #c7a008;
+  background: #306230;
+  color: #9bbc0f;
+  border: 3px solid #9bbc0f;
   padding: 6px 12px;
+  cursor: pointer;
   font-family: "Press Start 2P", cursive;
   font-size: 10px;
-  cursor: pointer;
+  box-shadow: 3px 3px 0 #1a2f1a;
+  transition: none;
 }
+
 .top-back-btn:hover {
-  background: #f5b700;
+  background: #4a7b4a;
   transform: translate(1px, 1px);
 }
 
-/* ============================================
-   LOADING STATE
-============================================ */
-.poke-loading {
-  font-size: 12px;
-  color: #ffcb05;
-  margin-top: 50px;
+.top-title {
+  font-size: 14px;
+  text-shadow: 2px 2px 0 #306230, 0 0 4px #ffcb05;
+  letter-spacing: 1px;
 }
 
-/* ============================================
-   GRID WRAPPER
-============================================ */
 .all-poke-wrapper {
   width: 100%;
-  max-width: 1200px;
+  display: flex;
+  justify-content: center;
 }
 
 .poke-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
-  justify-items: center;
+  width: 100%;
+  max-width: 1000px;
 }
 
-/* ============================================
-   POKÉMON CARD
-============================================ */
 .poke-card {
   background: #306230;
-  border: 4px solid #9bbc0f;
-  padding: 10px;
-  text-align: center;
-  box-shadow: 4px 4px 0 #1a2f1a;
+  border: 3px solid #9bbc0f;
+  padding: 6px;
   cursor: pointer;
-  width: 100%;
-  max-width: 140px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: transform 0s;
+  text-align: center;
+  position: relative;
+  transition: none;
+  box-shadow: 3px 3px 0 #1a2f1a;
 }
 
 .poke-card:hover {
-  transform: translate(2px, 2px);
+  transform: translate(1px, 1px);
 }
 
-/* Shiny Pokémon highlight */
 .poke-card.shiny {
-  border-color: #f8d030;
-  box-shadow: 4px 4px 0 #f8d030;
+  border: 3px solid #f8f870;
 }
 
-/* NFT / Listed badges container */
-.badges-container {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-bottom: 6px;
+.poke-card.listed {
+  box-shadow: 3px 3px 0 #ffcb05;
 }
 
-.nft-badge,
-.listed-badge {
-  font-size: 7px;
-  padding: 2px 4px;
-  border: 2px solid #0f380f;
-  background: #ffcb05;
-  color: #0f380f;
-  text-shadow: none;
-  box-shadow: 2px 2px 0 #1a2f1a;
-}
-
-/* ============================================
-   IMAGE + NAME + TYPES
-============================================ */
 .poke-card img {
-  width: 64px;
-  height: 64px;
-  background: #0f380f;
-  padding: 4px;
-  border: 3px solid #9bbc0f;
-  box-shadow: 3px 3px 0 #1a2f1a;
+  width: 80px;
+  height: 80px;
   margin-bottom: 6px;
 }
 
 .poke-name {
   font-size: 10px;
-  color: #ffcb05;
   margin-bottom: 4px;
 }
 
 .poke-types {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
   gap: 4px;
+  flex-wrap: wrap;
   margin-bottom: 4px;
 }
 
 .type-tag {
-  font-size: 7px;
   padding: 2px 4px;
-  border: 2px solid #0f380f;
-  color: #0f380f;
-  box-shadow: 2px 2px 0 #1a2f1a;
+  font-size: 7px;
+  border: 1px solid #1a2f1a;
+  color: #fff;
 }
 
-/* Rarity label */
 .poke-rarity {
   font-size: 8px;
-  margin-top: 2px;
+  color: #ffcb05;
 }
 
-/* ============================================
-   EMPTY STATE
-============================================ */
-.empty-box {
-  font-size: 10px;
+.badges-container {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nft-badge,
+.listed-badge {
+  font-size: 6px;
+  padding: 1px 3px;
+  background: #ffcb05;
+  color: #0f380f;
+  border: 1px solid #306230;
+  text-shadow: 1px 1px 0 #1a2f1a;
+}
+
+.poke-loading {
+  font-size: 12px;
   text-align: center;
-  color: #ffcb05;
   margin-top: 50px;
 }
 
-/* ============================================
-   SCROLLBAR (THEMED)
-============================================ */
-.poke-grid::-webkit-scrollbar {
-  width: 6px;
+.empty-box {
+  font-size: 10px;
+  text-align: center;
+  color: #f8f870;
+  margin-top: 50px;
 }
 
-.poke-grid::-webkit-scrollbar-track {
-  background: #0f380f;
-}
+/* RESPONSIVENESS */
+@media (max-width: 500px) {
+  .poke-card img {
+    width: 60px;
+    height: 60px;
+  }
 
-.poke-grid::-webkit-scrollbar-thumb {
-  background: #ffcb05;
-  border: 1px solid #c7a008;
-}
+  .poke-name {
+    font-size: 8px;
+  }
 
-.poke-grid::-webkit-scrollbar-thumb:hover {
-  background: #f5b700;
-}
+  .poke-rarity {
+    font-size: 6px;
+  }
 
-.poke-grid {
-  scrollbar-width: thin;
-  scrollbar-color: #ffcb05 #0f380f;
+  .type-tag {
+    font-size: 5px;
+    padding: 1px 2px;
+  }
 }

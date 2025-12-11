@@ -7,15 +7,20 @@ import {
   setDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import "./TeamSelect.css";
 
 export default function TeamSelect({
   onConfirm = () => {},
   onCancel = () => {},
+  onBack = () => {
+    () => navigate(-1);
+  },
 }) {
   const [monList, setMonList] = useState([]);
   const [team, setTeam] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -100,6 +105,11 @@ export default function TeamSelect({
 
   return (
     <div className="team-select-container">
+      {/* Back button */}
+      <button className="team-back-btn" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
+
       <h2 className="team-title">Select Your Team</h2>
 
       <div className="team-bar">
@@ -160,10 +170,11 @@ export default function TeamSelect({
         >
           Confirm
         </button>
-        <button className="team-btn cancel" onClick={onCancel}>
+        <button className="team-btn cancel" onClick={() => navigate(-1)}>
           Cancel
         </button>
       </div>
+
       {toastMessage && <div className="team-toast">{toastMessage}</div>}
     </div>
   );
