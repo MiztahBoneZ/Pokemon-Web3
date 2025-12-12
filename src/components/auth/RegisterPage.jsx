@@ -2,93 +2,96 @@ import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../Core/firebase";
 import { useNavigate } from "react-router-dom";
-import { ethers } from "ethers";
 import "./AuthPageStyle.css";
+
+/* ---------- HELPER: STRONG PASSWORD CHECK ---------- */
+const strongPassword = (pw) => {
+  if (pw.length < 8) return { ok: false, msg: "At least 8 characters." };
+  if (!/[A-Z]/.test(pw)) return { ok: false, msg: "One uppercase letter." };
+  if (!/[a-z]/.test(pw)) return { ok: false, msg: "One lowercase letter." };
+  if (!/[0-9]/.test(pw)) return { ok: false, msg: "One number." };
+  if (!/[^A-Za-z0-9]/.test(pw))
+    return { ok: false, msg: "One special character." };
+  return { ok: true };
+};
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [walletAddress, setWalletAddress] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
+    /* ---------- FRONT-END VALIDATION ---------- */
+    const trimmed = email.trim();
+    if (!trimmed) return setError("Email is required.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed))
+      return setError("Invalid e-mail format.");
+
+    const pwCheck = strongPassword(password);
+    if (!pwCheck.ok) return setError("Password: " + pwCheck.msg);
+
+    setLoading(true);
+
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Registration successful!");
-
-      await connectWallet();
-
+      await createUserWithEmailAndPassword(auth, trimmed, password);
       navigate("/onboarding");
     } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const connectWallet = async () => {
-    try {
-      if (!window.ethereum) {
-        alert("MetaMask not detected. Please install MetaMask to continue.");
-        return;
-      }
-
-      setIsConnecting(true);
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      const address = accounts[0];
-
-      setWalletAddress(address);
-      alert(`Wallet connected: ${address}`);
-
-      setIsConnecting(false);
-    } catch (err) {
-      console.error("Wallet connection failed:", err);
-      setIsConnecting(false);
-      setError("Failed to connect wallet. Please try again.");
+      setLoading(false);
+      const map = {
+        "auth/email-already-in-use": "Email already registered – please login.",
+        "auth/weak-password": "Password too weak.",
+        "auth/invalid-email": "Invalid email address.",
+      };
+      setError(map[err.code] || err.message);
     }
   };
 
   return (
-    <div className="login-wrapper">
+    <div className="page-wrapper">
       <div className="login-container">
-        <h1>Register</h1>
-        <h2>Create Account</h2>
-        <form onSubmit={handleRegister}>
+        <h1>PayPal</h1>
+        <h2>Create your account</h2>
+
+        <form onSubmit={handleRegister} noValidate>
           {error && <p className="error">{error}</p>}
+
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            disabled={loading}
           />
+
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Strong password (8+ chars, upper, lower, number, symbol)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            disabled={loading}
           />
 
-          <button type="submit" disabled={isConnecting}>
-            {isConnecting
-              ? "Connecting Wallet..."
-              : "Register & Connect Wallet"}
-          </button>
+          <div className="login-info">
+            <p className="info-text">
+              A Crypto Wallet with ETH tokens is required for minting your
+              starter and completing the registration process.
+            </p>
+          </div>
 
-          {walletAddress && (
-            <p style={{ color: "green" }}>Wallet: {walletAddress}</p>
-          )}
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating Account..." : "Create Account"}
+          </button>
 
           <button
             type="button"
             onClick={() => navigate("/")}
             style={{ backgroundColor: "#2a75bb", color: "white" }}
+            disabled={loading}
           >
             Back to Login
           </button>
