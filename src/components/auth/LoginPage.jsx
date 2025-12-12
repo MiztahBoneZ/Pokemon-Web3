@@ -6,12 +6,25 @@ import { ethers } from "ethers";
 import { useNavigate, Link } from "react-router-dom";
 import "./AuthPageStyle.css";
 
+/* ---------- helpers ---------- */
+const strongPassword = (pw) => {
+  if (pw.length < 8) return { ok: false, msg: "≥ 8 chars" };
+  if (!/[A-Z]/.test(pw)) return { ok: false, msg: "uppercase letter" };
+  if (!/[a-z]/.test(pw)) return { ok: false, msg: "lowercase letter" };
+  if (!/[0-9]/.test(pw)) return { ok: false, msg: "number" };
+  if (!/[^A-Za-z0-9]/.test(pw)) return { ok: false, msg: "symbol" };
+  return { ok: true };
+};
+
+const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isVerifyingWallet, setIsVerifyingWallet] = useState(false);
   const [waitingForWallet, setWaitingForWallet] = useState(false);
+
   const navigate = useNavigate();
   const db = getFirestore();
 
@@ -19,124 +32,69 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
+    /* ---------- stronger client-side checks ---------- */
+    const em = email.trim();
+    if (!em) return setError("Email required.");
+    if (!validEmail(em)) return setError("Invalid email format.");
+    const pwCheck = strongPassword(password);
+    if (!pwCheck.ok) return setError("Password needs " + pwCheck.msg + ".");
+
+    setIsVerifyingWallet(true);
+    setWaitingForWallet(true);
+
     try {
-      // Step 1: Sign in with email/password
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
+      /* 1. Firebase auth */
+      const { user } = await signInWithEmailAndPassword(auth, em, password);
 
-      // Step 2: Check if user has completed onboarding and has a wallet
-      const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef);
+      /* 2. User doc exists? */
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      if (!userSnap.exists()) throw { code: "custom/no-user-doc" };
 
-      if (!userDoc.exists()) {
-        setError("User data not found. Please contact support.");
-        await auth.signOut();
+      const { hasCompletedOnboarding, wallet: registeredWallet } =
+        userSnap.data();
+      if (!hasCompletedOnboarding || !registeredWallet) {
+        navigate("/onboarding"); // short-circuit ok
         return;
       }
 
-      const userData = userDoc.data();
+      /* 3. MetaMask checks */
+      if (!window.ethereum) throw { code: "custom/no-mm" };
 
-      // If user hasn't completed onboarding yet, allow them through
-      if (!userData.hasCompletedOnboarding || !userData.wallet) {
-        console.log("User hasn't completed onboarding yet");
-        navigate("/onboarding");
-        return;
-      }
-
-      // Step 3: User has a registered wallet - verify it matches
-      const registeredWallet = userData.wallet.toLowerCase();
-
-      setIsVerifyingWallet(true);
-      setWaitingForWallet(true);
-
-      // Check if MetaMask is installed
-      if (!window.ethereum) {
-        setError("MetaMask not detected. Please install MetaMask to continue.");
-        setIsVerifyingWallet(false);
-        setWaitingForWallet(false);
-        await auth.signOut();
-        return;
-      }
-
-      // Get current wallet
       const provider = new ethers.BrowserProvider(window.ethereum);
       let accounts = await provider.listAccounts();
-
-      // If no wallet connected, request connection
-      if (accounts.length === 0) {
-        try {
-          await provider.send("eth_requestAccounts", []);
-          accounts = await provider.listAccounts();
-        } catch (err) {
-          setError("Please connect your MetaMask wallet to continue.");
-          setIsVerifyingWallet(false);
-          setWaitingForWallet(false);
-          await auth.signOut();
-          return;
-        }
+      if (!accounts.length) {
+        accounts = await provider.send("eth_requestAccounts", []);
       }
-
       const signer = await provider.getSigner();
       const currentWallet = (await signer.getAddress()).toLowerCase();
 
       setWaitingForWallet(false);
 
-      // Step 4: Compare wallets
-      if (currentWallet !== registeredWallet) {
-        setError(
-          `Wrong wallet connected!\n\n` +
-            `This account is linked to: ${registeredWallet.slice(
-              0,
-              8
-            )}...${registeredWallet.slice(-6)}\n` +
-            `You're currently using: ${currentWallet.slice(
-              0,
-              8
-            )}...${currentWallet.slice(-6)}\n\n` +
-            `Please switch to the correct wallet in MetaMask.`
-        );
-        setIsVerifyingWallet(false);
-        await auth.signOut();
-        return;
-      }
+      if (currentWallet !== registeredWallet.toLowerCase())
+        throw { code: "custom/wrong-wallet", registeredWallet, currentWallet };
 
-      // Step 5: Check if on Sepolia network
-      const network = await provider.getNetwork();
-      if (network.chainId !== 11155111n) {
-        setError("Please switch to Sepolia test network in MetaMask!");
-        setIsVerifyingWallet(false);
-        await auth.signOut();
-        return;
-      }
+      const { chainId } = await provider.getNetwork();
+      if (chainId !== 11155111n) throw { code: "custom/wrong-network" };
 
-      // Success! Wallet matches
-      setIsVerifyingWallet(false);
+      /* 4. success */
       navigate("/game");
     } catch (err) {
       setIsVerifyingWallet(false);
       setWaitingForWallet(false);
 
-      // Handle specific Firebase errors
-      if (err.code === "auth/user-not-found") {
-        setError("No account found with this email.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password.");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address.");
-      } else if (err.code === "auth/user-disabled") {
-        setError("This account has been disabled.");
-      } else {
-        setError(err.message);
-      }
-
-      // Sign out if already signed in
-      if (auth.currentUser) {
-        await auth.signOut();
-      }
+      const map = {
+        "auth/user-not-found": "No account with that email.",
+        "auth/wrong-password": "Wrong password.",
+        "auth/invalid-email": "Invalid email address.",
+        "auth/user-disabled": "Account disabled.",
+        "auth/too-many-requests": "Too many attempts. Try again later.",
+        "custom/no-mm": "MetaMask not detected.",
+        "custom/no-user-doc": "User data missing. Contact support.",
+        "custom/wrong-wallet": "Connected wallet does not match account.",
+        "custom/wrong-network": "Switch to Sepolia test network.",
+      };
+      setError(map[err.code] || err.message || "Login failed.");
+      if (auth.currentUser) await auth.signOut();
     }
   };
 
@@ -144,32 +102,23 @@ export default function LoginPage() {
     <div className="page-wrapper">
       <div className="login-container">
         <h1>PayPal</h1>
-        <h2>Sign in to your account</h2>
+        <h2>Sign in</h2>
 
         {isVerifyingWallet && (
           <div className="wallet-verification-notice">
-            {waitingForWallet ? (
-              <>
-                <div className="spinner-small"></div>
-                <p>Please connect your MetaMask wallet...</p>
-              </>
-            ) : (
-              <>
-                <div className="spinner-small"></div>
-                <p>Verifying wallet...</p>
-              </>
-            )}
+            <div className="spinner-small"></div>
+            <p>{waitingForWallet ? "Connect MetaMask…" : "Verifying…"}</p>
           </div>
         )}
+        {error && <p className="error">{error}</p>}
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} noValidate>
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isVerifyingWallet}
-            required
           />
           <input
             type="password"
@@ -177,20 +126,27 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isVerifyingWallet}
-            required
           />
-          {error && <p className="error">{error}</p>}
           <div className="login-info">
             <p className="info-text">
-              Ensure the correct metamask wallet is Connected and Active
+              Ensure the correct MetaMask wallet is connected and active.
             </p>
           </div>
+
           <button type="submit" disabled={isVerifyingWallet}>
-            {isVerifyingWallet ? "Verifying..." : "Login"}
+            {isVerifyingWallet ? "Verifying…" : "Login"}
           </button>
         </form>
+
         <Link to="/register">
-          <button style={{ marginTop: "10px" }} disabled={isVerifyingWallet}>
+          <button
+            style={{
+              marginTop: "10px",
+              backgroundColor: "#4221ff",
+              color: "white",
+            }}
+            disabled={isVerifyingWallet}
+          >
             Create an Account
           </button>
         </Link>

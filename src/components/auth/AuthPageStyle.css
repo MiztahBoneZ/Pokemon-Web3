@@ -75,7 +75,7 @@ body {
 }
 
 .login-container input::placeholder {
-  color: #5a6e5a;
+  color: #0f380f;
 }
 
 /* pixel button */
@@ -190,15 +190,14 @@ body {
 
 /* Error Message Enhancement */
 .error {
-  background: #fee;
-  color: #c00;
-  padding: 12px;
-  border-radius: 8px;
-  margin: 15px 0;
-  font-size: 13px;
-  line-height: 1.5;
-  border-left: 4px solid #c00;
-  white-space: pre-line; /* Allows \n to create line breaks */
+  margin: 16px 0;
+  padding: 10px;
+  background: #000000;
+  border: 2px solid #bc0f0f;
+  box-shadow: 4px 4px 0 #380f1f;
+  color: red;
+  border-radius: 0;
+  font-family: "Press Start 2P", cursive;
 }
 
 /* Disabled State */

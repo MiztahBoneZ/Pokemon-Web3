@@ -18,6 +18,7 @@ const strongPassword = (pw) => {
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState(""); // ← NEW
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,6 +35,10 @@ export default function RegisterPage() {
 
     const pwCheck = strongPassword(password);
     if (!pwCheck.ok) return setError("Password: " + pwCheck.msg);
+
+    /* ---------- CONFIRM PASSWORD CHECK ---------- */
+    if (password !== confirmPassword)
+      return setError("Passwords do not match.");
 
     setLoading(true);
 
@@ -70,16 +75,26 @@ export default function RegisterPage() {
 
           <input
             type="password"
-            placeholder="Strong password (8+ chars, upper, lower, number, symbol)"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
           />
 
+          {/* ---------- CONFIRM PASSWORD INPUT ---------- */}
+          <input
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
+          />
+
           <div className="login-info">
             <p className="info-text">
-              A Crypto Wallet with ETH tokens is required for minting your
-              starter and completing the registration process.
+              A Crypto Wallet with ETH tokens is required for completing the
+              registration process and minting your first legally distinct
+              pocket monsters.
             </p>
           </div>
 
@@ -90,7 +105,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => navigate("/")}
-            style={{ backgroundColor: "#2a75bb", color: "white" }}
+            style={{ backgroundColor: "#91000cff", color: "white" }}
             disabled={loading}
           >
             Back to Login

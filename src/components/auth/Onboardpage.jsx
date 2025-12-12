@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../Core/firebase";
@@ -8,6 +8,7 @@ import {
   setDoc,
   getDocs,
   collection,
+  getDoc,
 } from "firebase/firestore";
 import "./OnboardingStyle.css";
 
@@ -30,6 +31,31 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const db = getFirestore();
 
+  // Check if user is logged in and hasn't completed onboarding
+  useEffect(() => {
+    const checkUser = async () => {
+      const user = auth.currentUser;
+
+      if (!user) {
+        // Not logged in - redirect to login
+        alert("Please login first!");
+        navigate("/");
+        return;
+      }
+
+      // Check if already completed onboarding
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists() && userDoc.data().hasCompletedOnboarding) {
+        // Already completed - redirect to game
+        navigate("/game");
+      }
+    };
+
+    checkUser();
+  }, [navigate, db]);
+
   const getRarity = (stats) => {
     const total = Object.values(stats).reduce((sum, val) => sum + val, 0);
     if (total >= 600)
@@ -48,6 +74,14 @@ export default function OnboardingPage() {
       alert("MetaMask not detected. Please install MetaMask extension.");
       return;
     }
+
+    // Make sure user is logged in
+    if (!auth.currentUser) {
+      alert("Please login first!");
+      navigate("/");
+      return;
+    }
+
     try {
       setIsConnecting(true);
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -55,7 +89,7 @@ export default function OnboardingPage() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Ensure asa sepolia para walang bayad
+      // Ensure on Sepolia network
       const network = await provider.getNetwork();
       if (network.chainId !== 11155111n) {
         alert("Please switch to Sepolia test network in MetaMask!");
@@ -73,7 +107,6 @@ export default function OnboardingPage() {
     }
   };
 
-  // Simple metadata creation (no IPFS for now - use data URI)
   const createMetadataURI = (metadata) => {
     const nftMetadata = {
       name: `${metadata.name.charAt(0).toUpperCase() + metadata.name.slice(1)}${
@@ -108,7 +141,6 @@ export default function OnboardingPage() {
       ],
     };
 
-    // Create data URI (for testing - in production use IPFS)
     const jsonString = JSON.stringify(nftMetadata);
     const base64 = btoa(unescape(encodeURIComponent(jsonString)));
     return `data:application/json;base64,${base64}`;
@@ -139,7 +171,6 @@ export default function OnboardingPage() {
         isShiny: pokemonData.isShiny,
       });
 
-      // Call the smart contract mint function
       const tx = await contract.mintPokemon(
         walletAddress,
         tokenURI,
@@ -153,13 +184,11 @@ export default function OnboardingPage() {
       console.log("Transaction sent:", tx.hash);
       setMintingStatus("Waiting for confirmation...");
 
-      // Wait for transaction to be mined
       const receipt = await tx.wait();
       console.log("Transaction confirmed!", receipt);
 
       setMintingStatus("Extracting token ID...");
 
-      // Extract tokenId from event logs
       let tokenId = null;
       for (const log of receipt.logs) {
         try {
@@ -187,11 +216,10 @@ export default function OnboardingPage() {
       setIsMinting(false);
       setMintingStatus("");
 
-      // User-friendly error messages
       if (error.code === "ACTION_REJECTED") {
         throw new Error("You rejected the transaction in MetaMask");
       } else if (error.message.includes("insufficient funds")) {
-        throw new Error("Insuficcient Funds");
+        throw new Error("Insufficient Funds");
       } else if (error.message.includes("wrong network")) {
         throw new Error("Please switch to Sepolia test network in MetaMask");
       } else {
@@ -215,7 +243,7 @@ export default function OnboardingPage() {
       console.log("Generating random Pokémon...");
 
       const randomId = Math.floor(Math.random() * 151) + 1;
-      const isShiny = Math.random() < 0.01; // 1% shiny chance
+      const isShiny = Math.random() < 0.01;
 
       const response = await fetch(
         `https://pokeapi.co/api/v2/pokemon/${randomId}`
@@ -281,7 +309,6 @@ export default function OnboardingPage() {
       const { tokenId, txHash } = await mintNFT(hatchedPokemon);
       console.log("NFT minted! Token ID:", tokenId, "Tx:", txHash);
 
-      // Store in Firebase with NFT reference
       const user = auth.currentUser;
       if (user) {
         console.log("Saving to Firebase...");
@@ -290,7 +317,7 @@ export default function OnboardingPage() {
         await setDoc(
           userRef,
           {
-            wallet: walletAddress,
+            wallet: walletAddress.toLowerCase(), // Store in lowercase for comparison
             hasCompletedOnboarding: true,
             UserFirebaseID: user.uid,
           },
@@ -339,7 +366,6 @@ export default function OnboardingPage() {
       setIsMinting(true);
       setMintingStatus("Updating nickname on blockchain...");
 
-      // Update nickname on blockchain if NFT exists
       if (nftTokenId) {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
@@ -366,7 +392,6 @@ export default function OnboardingPage() {
       const updatedPokemon = { ...pokemon, nickname: pokemonNickname };
       setPokemon(updatedPokemon);
 
-      // Update Firebase
       const user = auth.currentUser;
       if (user) {
         const inventorySnapshot = await getDocs(
@@ -487,7 +512,10 @@ export default function OnboardingPage() {
           <div className="step-content">
             <h2>🔗 Connect Your Wallet</h2>
             <p className="step-description">
-              Connect your MetaMask wallet to begin your journey
+              Connect your MetaMask wallet to complete registration
+            </p>
+            <p className="wallet-lock-notice">
+              ⚠️ This wallet will be permanently linked to your account
             </p>
             <p className="network-warning">
               Make sure you're on Sepolia test network
