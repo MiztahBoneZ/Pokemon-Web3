@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 import { auth, frdb } from "../../Core/firebase";
 import { collection, getDocs } from "firebase/firestore";
-import PokemonNFTABI from "../PokemonNFT.json";
+import PokemonNFTABI from "../../Core/PokemonNFT.json";
 import "./AllPokemon.css";
 import PokemonStatsModal from "./PokemonStatsModal.jsx";
 
-const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
+const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D";
 
 export default function AllPokemon({ back }) {
   const navigate = useNavigate();

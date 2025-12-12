@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import "./OnboardingStyle.css";
 
-import PokemonNFTABI from "../PokemonNFT.json";
+import PokemonNFTABI from "../../Core/PokemonNFT.json";
 const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
 export default function OnboardingPage() {

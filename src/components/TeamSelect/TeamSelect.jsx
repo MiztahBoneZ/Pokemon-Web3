@@ -170,7 +170,7 @@ export default function TeamSelect({
         >
           Confirm
         </button>
-        <button className="team-btn cancel" onClick={() => navigate(-1)}>
+        <button className="team-btn cancel" onClick={onBack}>
           Cancel
         </button>
       </div>
