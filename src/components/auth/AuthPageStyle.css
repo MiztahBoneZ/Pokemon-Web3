@@ -20,7 +20,8 @@ body {
     rgba(27, 19, 59, 1) 65%
   );
   font-family: "Press Start 2P", cursive;
-  color: #9bbc0f; /* Game-Boy light green */
+  background: #0f380f; /* Game-Boy darkest green */
+  border: 4px solid #9bbc0f;
 }
 
 .page-wrapper {
@@ -28,6 +29,8 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
+  background: #0f380f; /* Game-Boy darkest green */
+  border: 4px solid #9bbc0f;
 }
 
 /* bigger container, smaller fonts */

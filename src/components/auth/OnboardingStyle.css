@@ -1,202 +1,193 @@
-/* 8-Bit RPG Onboarding Styles - No Scroll Edition */
-
-/* Import classic pixel font */
+/* ============================================
+   ONBOARDING STYLES
+   Pokémon-style pixel UI for trainer onboarding
+============================================ */
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
-/* GLOBAL RESETS - CRITICAL FOR NO-SCROLL */
+/* ---------- 1. GLOBAL RESET / THEME ---------- */
 * {
   box-sizing: border-box;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-}
-
-html,
-body {
-  width: 100vw;
-  height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  font-family: "Press Start 2P", cursive;
-  background: #0f380f;
-  color: #9bbc0f;
 }
-
-/* NES/Game Boy Color Palette */
 :root {
-  --color-bg-dark: #0f380f;
-  --color-bg-medium: #306230;
-  --color-bg-light: #9bbc0f;
-  --color-primary: #ffcb05;
-  --color-primary-dark: #c7a008;
-  --color-success: #48da4a;
-  --color-warning: #da6a48;
-  --color-error: #da4848;
-  --color-text: #9bbc0f;
-  --color-text-dark: #0f380f;
-  --color-border: #9bbc0f;
+  --bg-dark: #0f380f;
+  --bg-mid: #306230;
+  --bg-light: #9bbc0f;
+  --accent-yellow: #ffcb05;
+  --accent-gold: #c7a008;
+  --accent-red: #da4848;
+  --accent-red-dark: #b83838;
+  --text-main: #9bbc0f;
+  --text-dark: #0f380f;
+  --white: #ffffff;
+  --black: #000000;
+  --rarity-common: #a0a0a0;
+  --rarity-rare: #4facfe;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f59e0b;
+  --rarity-mythic: #ef4444;
 }
 
-/* MAIN CONTAINER - FILLS VIEWPORT */
+body {
+  font-family: "Press Start 2P", cursive;
+  color: var(--text-main);
+  background: var(--bg-dark);
+  overflow: hidden;
+}
+
+/* ---------- 2. WRAPPER / LAYOUT ---------- */
 .onboarding-wrapper {
+  min-height: 100vh;
   width: 100vw;
-  height: 100vh;
-  background: var(--color-bg-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border: 4px solid var(--color-border);
+  position: relative;
+  border: 4px solid var(--bg-mid);
+  padding: 24px;
 }
 
-/* CONTENT BOX - COMPACT AND CONTAINED */
 .onboarding-container {
-  background: var(--color-bg-medium);
-  border: 4px solid var(--color-border);
-  padding: 12px;
   width: 100%;
-  height: 100%;
-  max-width: 1200px;
-  max-height: 800px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* NO SCROLLING */
-  box-shadow: 0 4px 0 var(--color-bg-dark), 4px 0 0 var(--color-bg-dark),
-    4px 4px 0 var(--color-bg-dark);
-}
-
-/* TITLE - SMALL AND PIXELATED */
-.main-title {
+  max-width: 800px;
+  background: var(--bg-mid);
+  border: 3px solid var(--bg-light);
+  box-shadow: 6px 6px 0 var(--black);
+  padding: 32px 24px;
   text-align: center;
-  font-size: 16px;
-  margin: 4px 0 8px;
-  color: var(--color-primary);
-  text-shadow: 2px 2px 0 var(--color-primary-dark);
-  line-height: 1.2;
-  flex-shrink: 0;
 }
 
-/* PROGRESS STEPS - HORIZONTAL & COMPACT */
+/* ---------- 3. TYPOGRAPHY ---------- */
+.main-title {
+  font-size: 20px;
+  color: var(--accent-yellow);
+  text-shadow: 2px 2px 0 var(--bg-dark), 0 0 6px var(--accent-yellow);
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+
+.step-description,
+.network-warning,
+.hint-text,
+.hatching-text {
+  font-size: 10px;
+  line-height: 1.4;
+  margin: 8px 0;
+}
+
+.network-warning {
+  color: var(--accent-red);
+}
+
+/* ---------- 4. PROGRESS STEPS ---------- */
 .progress-steps {
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  margin: 8px 0;
-  gap: 4px;
-  flex-shrink: 0;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 32px;
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-  flex: 1;
-  min-width: 0;
-}
-
-.step.active {
-  opacity: 1;
-}
-
-.step.completed .step-circle {
-  background: var(--color-success);
-  color: var(--color-text-dark);
+  gap: 6px;
+  font-size: 9px;
 }
 
 .step-circle {
-  width: 36px;
-  height: 36px;
-  border: 3px solid var(--color-border);
-  background: var(--color-bg-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-dark);
+  border: 2px solid var(--bg-light);
+  display: grid;
+  place-items: center;
+  color: var(--bg-light);
+  transition: background 0.2s;
 }
 
-.step span {
-  font-size: 8px;
-  text-align: center;
-  color: var(--color-text);
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
+.step.active .step-circle {
+  background: var(--accent-yellow);
+  color: var(--text-dark);
+  border-color: var(--accent-gold);
+}
+
+.step.completed .step-circle {
+  background: var(--bg-light);
+  color: var(--text-dark);
 }
 
 .step-line {
-  display: none; /* Removed for space */
+  width: 40px;
+  height: 2px;
+  background: var(--bg-light);
 }
 
-/* CONTENT AREA - FLEXIBLE BUT CONTAINED */
-.step-content {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0; /* Allows shrinking */
-}
-
-.step-content h2 {
-  font-size: 14px;
-  margin: 8px 0;
-  color: var(--color-primary);
-  text-align: center;
-  line-height: 1.2;
-}
-
-.step-description {
-  color: var(--color-text);
-  margin-bottom: 12px;
-  font-size: 9px;
-  line-height: 1.4;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-/* PIXEL BUTTONS */
-.primary-button {
-  background: var(--color-primary);
-  color: var(--color-text-dark);
-  border: 3px solid var(--color-primary-dark);
-  padding: 10px 24px;
+/* ---------- 5. BUTTONS ---------- */
+.primary-button,
+.secondary-button,
+.small-button,
+.egg-button {
+  font-family: inherit;
   font-size: 10px;
-  font-family: "Press Start 2P", cursive;
+  border: 3px solid var(--accent-gold);
+  background: var(--accent-yellow);
+  color: var(--text-dark);
+  padding: 10px 16px;
   cursor: pointer;
-  transition: all 0.1s;
-  margin: 8px auto;
-  flex-shrink: 0;
+  box-shadow: 3px 3px 0 var(--black);
+  transition: none;
 }
 
-.primary-button:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+.primary-button:hover,
+.secondary-button:hover,
+.small-button:hover {
+  background: var(--accent-gold);
+  transform: translate(2px, 2px);
+}
+
+.primary-button:active,
+.secondary-button:active,
+.small-button:active {
   transform: translate(1px, 1px);
 }
 
-.primary-button:disabled {
+.primary-button:disabled,
+.secondary-button:disabled,
+.small-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.primary-button.large {
-  padding: 12px 32px;
-  font-size: 11px;
+.secondary-button {
+  background: var(--bg-light);
+  border-color: var(--white);
 }
 
-/* SPINNER - PIXELATED */
+.small-button {
+  padding: 6px 10px;
+  font-size: 9px;
+}
+
+.small-button.cancel {
+  background: var(--accent-red);
+  border-color: var(--accent-red-dark);
+}
+
+/* ---------- 6. SPINNERS ---------- */
 .spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--color-bg-dark);
-  border-top-color: var(--color-text-dark);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--bg-light);
+  border-top-color: transparent;
   border-radius: 50%;
-  animation: spin 0.8s steps(8) infinite;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  margin-right: 6px;
 }
 
 @keyframes spin {
@@ -205,399 +196,172 @@ body {
   }
 }
 
-/* WALLET STATUS - COMPACT */
-.wallet-connected {
-  background: var(--color-success);
-  border: 3px solid var(--color-text-dark);
-  padding: 8px;
-  margin: 8px auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 95%;
-  color: var(--color-text-dark);
-  font-size: 8px;
-  flex-shrink: 0;
-}
-
-.wallet-address {
-  font-family: monospace;
-  font-size: 8px;
+/* ---------- 7. CONFETTI ---------- */
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/* EGG SECTION - SIDE-BY-SIDE */
-.egg-section {
+.confetti {
+  position: absolute;
+  width: 6px;
+  height: 12px;
+  opacity: 0.9;
+  animation: confetti-fall 1.2s linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+  }
+}
+
+/* ---------- 8. MINTING OVERLAY ---------- */
+.minting-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: start;
-  flex: 1;
-  min-height: 0;
+  place-items: center;
+  z-index: 999;
 }
 
-.egg-content h2 {
-  font-size: 14px;
-  margin: 0 0 8px;
+.minting-modal {
+  background: var(--bg-mid);
+  border: 3px solid var(--bg-light);
+  padding: 24px;
+  box-shadow: 4px 4px 0 var(--black);
+  text-align: center;
+  max-width: 320px;
 }
 
-.egg-content .step-description {
-  text-align: left;
-  margin: 0 0 12px;
+.minting-modal h3 {
+  font-size: 12px;
+  margin: 12px 0 6px;
 }
 
-.egg-display {
+.minting-note {
+  font-size: 9px;
+  color: var(--accent-yellow);
+}
+
+/* ---------- 9. EGG SECTION ---------- */
+.egg-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 0;
+  gap: 24px;
 }
 
-/* PIXEL EGG */
-.egg {
-  width: 120px;
-  height: 160px;
-  background: var(--color-bg-light);
-  border: 3px solid var(--color-border);
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  margin: 8px auto;
+.wallet-connected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  background: var(--bg-dark);
+  padding: 6px 10px;
+  border: 2px solid var(--bg-light);
 }
 
-.egg.idle {
-  animation: egg-float 2s steps(4) infinite;
+.checkmark {
+  color: var(--accent-yellow);
 }
 
-@keyframes egg-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+.wallet-address {
+  font-size: 8px;
+  color: var(--bg-light);
+  margin-left: 4px;
+}
+
+.egg-display {
+  margin-top: 16px;
+}
+
+.egg-container,
+.egg-hatching-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.egg-wrapper {
+  position: relative;
+}
+
+.egg,
+.egg-shell {
+  width: 80px;
+  height: 100px;
+  background: linear-gradient(135deg, #fff 40%, #f0f0f0 100%);
+  border-radius: 50% / 60% 60% 40% 40%;
+  position: relative;
+  box-shadow: inset -4px -4px 0 #d0d0d0;
 }
 
 .egg.shaking {
-  animation: shake 0.5s steps(4) infinite;
+  animation: shake 0.3s infinite;
 }
 
 @keyframes shake {
   0%,
   100% {
-    transform: rotate(0deg);
+    transform: translateX(0);
   }
   25% {
-    transform: rotate(-8deg);
+    transform: translateX(-2px);
   }
   75% {
-    transform: rotate(8deg);
+    transform: translateX(2px);
   }
 }
 
-/* POKEMON REVEAL - COMPACT GRID */
-.pokemon-reveal-section {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.pokemon-card {
-  background: var(--color-bg-medium);
-  border: 3px solid var(--color-border);
-  padding: 12px;
-  margin: 8px auto;
-  width: 100%;
-  max-width: 800px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.pokemon-sprite {
-  width: 100px;
-  height: 100px;
-  image-rendering: pixelated;
-  margin: 0 auto;
-  display: block;
-}
-
-/* STATS - COMPACT BARS */
-.stats-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 8px;
-}
-
-.stat-label {
-  min-width: 60px;
-  font-size: 8px;
-  color: var(--color-text);
-}
-
-.stat-value-container {
-  flex: 1;
-  height: 10px;
-  background: var(--color-bg-dark);
-  border: 1px solid var(--color-border);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-fill {
-  height: 100%;
-  background: var(--color-success);
-}
-
-.stat-number {
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 7px;
-  color: var(--color-text-dark);
-}
-
-/* MOVES - 2 COLUMN GRID */
-.moves-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-}
-
-.move-badge {
-  background: var(--color-bg-dark);
-  border: 2px solid var(--color-border);
-  padding: 6px;
-  font-size: 8px;
-  color: var(--color-text);
-  text-align: center;
-}
-
-/* INPUTS & SECONDARY BUTTONS */
-.nickname-input-container {
-  display: flex;
-  gap: 8px;
-  margin: 12px auto;
-  justify-content: center;
-  grid-column: 1 / -1;
-}
-
-.nickname-input {
-  padding: 8px;
-  border: 3px solid var(--color-border);
-  background: var(--color-bg-dark);
-  color: var(--color-text);
-  font-family: "Press Start 2P", cursive;
-  font-size: 8px;
-  width: 180px;
-}
-
-.secondary-button {
-  background: var(--color-bg-medium);
-  color: var(--color-primary);
-  border: 3px solid var(--color-primary);
-  padding: 10px 24px;
-  font-size: 10px;
-  font-family: "Press Start 2P", cursive;
-  cursor: pointer;
-  margin: 8px auto;
-  grid-column: 1 / -1;
-}
-
-/* ===== 8-BIT RESTORED SECTIONS ===== */
-
-/* 1. CONFETTI (mini pixel burst instead of DOM spam) */
-.confetti-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 100;
-}
-.confetti {
-  width: 4px;
-  height: 4px;
-  background: var(--color-primary);
-  position: absolute;
-  top: -4px;
-  animation: confetti-fall 2s steps(6) forwards;
-}
-@keyframes confetti-fall {
-  to {
-    transform: translateY(110vh);
-    opacity: 0;
-  }
-}
-
-/* 2. TYPE BADGES (Pokémon types) */
-.type-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border: 2px solid var(--color-text-dark);
-  font-size: 8px;
-  color: var(--color-text-dark);
-  margin: 2px;
-}
-.type-normal {
-  background: #a8a878;
-}
-.type-fire {
-  background: #f08030;
-}
-.type-water {
-  background: #6890f0;
-}
-.type-grass {
-  background: #78c850;
-}
-.type-electric {
-  background: #f8d030;
-}
-.type-psychic {
-  background: #f85888;
-}
-.type-ice {
-  background: #98d8d8;
-}
-.type-dragon {
-  background: #7038f8;
-}
-.type-dark {
-  background: #705848;
-}
-.type-fairy {
-  background: #ee99ac;
-}
-
-/* 3. RARITY BADGES */
-.rarity-badge {
-  padding: 4px 8px;
-  border: 2px solid var(--color-text-dark);
-  font-size: 8px;
-  color: var(--color-text-dark);
-}
-.rarity-common {
-  background: var(--color-bg-light);
-}
-.rarity-uncommon {
-  background: #48da4a;
-}
-.rarity-rare {
-  background: #4a8bda;
-}
-.rarity-epic {
-  background: #a44ada;
-}
-.rarity-legendary {
-  background: #dada48;
-}
-
-/* 4. CARD HEADER UTILITIES */
-.card-header {
-  grid-column: 1/-1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.pokemon-name {
-  font-size: 12px;
-  margin: 0;
-  color: var(--color-primary);
-}
-.original-name {
-  font-size: 7px;
-  color: var(--color-text);
-  margin-left: 4px;
-}
-.shiny-badge {
-  display: inline-block;
-  background: var(--color-primary);
-  color: var(--color-text-dark);
-  padding: 4px 8px;
-  border: 2px solid var(--color-primary-dark);
-  font-size: 8px;
-  animation: shine 1s steps(2) infinite;
-}
-@keyframes shine {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-/* 5. EGG CRACKS (pixel lines) */
 .crack {
   position: absolute;
-  background: var(--color-text-dark);
+  background: var(--text-dark);
+  height: 1px;
+  width: 20px;
+  transform-origin: left;
   opacity: 0;
-  animation: crack-appear 2s forwards;
-}
-.crack-1 {
-  width: 2px;
-  height: 24px;
-  top: 30%;
-  left: 40%;
-  transform: rotate(20deg);
-  animation-delay: 0.5s;
-}
-.crack-2 {
-  width: 2px;
-  height: 28px;
-  top: 40%;
-  right: 35%;
-  transform: rotate(-15deg);
-  animation-delay: 1s;
-}
-.crack-3 {
-  width: 2px;
-  height: 22px;
-  bottom: 30%;
-  left: 50%;
-  transform: rotate(45deg);
-  animation-delay: 1.5s;
-}
-@keyframes crack-appear {
-  to {
-    opacity: 1;
-  }
 }
 
-/* 6. GLOW (pixel aura) */
-.egg-glow {
-  position: absolute;
+.egg.shaking .crack {
+  opacity: 1;
+}
+
+.crack-1 {
+  top: 30%;
+  left: 20%;
+  transform: rotate(20deg);
+}
+
+.crack-2 {
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140px;
-  height: 180px;
-  background: radial-gradient(
-    circle,
-    var(--color-primary) 1px,
-    transparent 1px
-  );
-  background-size: 4px 4px;
-  opacity: 0.6;
-  animation: glow-pulse 1s steps(2) infinite;
+  transform: rotate(-30deg);
 }
-@keyframes glow-pulse {
+
+.crack-3 {
+  top: 70%;
+  left: 30%;
+  transform: rotate(45deg);
+}
+
+.egg-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-yellow) 0%, transparent 70%);
+  animation: pulse 1s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
   0%,
   100% {
     opacity: 0.4;
@@ -607,258 +371,182 @@ body {
   }
 }
 
-/* 7. HATCHING TEXT */
-.hatching-text {
+/* ---------- 10. POKÉMON REVEAL ---------- */
+.pokemon-reveal-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.reveal-title {
+  font-size: 16px;
+  color: var(--accent-yellow);
+}
+
+.shiny-badge {
+  color: #fde047;
+  text-shadow: 0 0 4px #fde047;
+}
+
+.nft-badge {
   font-size: 9px;
-  color: var(--color-primary);
-  animation: pulse 1s steps(2) infinite;
-}
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  background: var(--bg-dark);
+  padding: 4px 8px;
+  border: 2px solid var(--bg-light);
 }
 
-/* 8. HINT TEXT */
-.hint-text {
-  color: var(--color-text);
-  font-size: 7px;
-  margin-top: 4px;
-  text-align: center;
+.pokemon-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-dark);
+  border: 3px solid;
+  padding: 16px;
+  box-shadow: 4px 4px 0 var(--black);
 }
 
-/* 9. SMALL BUTTONS */
-.small-button {
-  padding: 6px 12px;
-  border: 2px solid var(--color-border);
-  background: var(--color-bg-dark);
-  color: var(--color-text);
-  font-family: "Press Start 2P", cursive;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.1s;
-}
-.small-button:hover {
-  background: var(--color-primary);
-  color: var(--color-text-dark);
-}
-.small-button.cancel {
-  background: var(--color-warning);
-  color: var(--color-text-dark);
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-/* 10. SECONDARY BUTTON (extra compact) */
-.secondary-button {
-  padding: 8px 20px;
-  font-size: 9px;
-  margin: 8px auto;
-  grid-column: 1/-1;
-  justify-self: center;
-}
-
-/* 11. REVEAL ANIMATION */
-.reveal-animation {
-  animation: fade-in-up 0.3s steps(4) forwards;
-}
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 12. FLOAT-IN */
-@keyframes float-in {
-  from {
-    opacity: 0;
-    transform: scale(0.7) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* 13. SHINY GLOW */
-.shiny-glow {
-  filter: drop-shadow(0 0 6px var(--color-primary));
-}
-
-/* 14. MOVE BADGE HOVER (tiny) */
-.move-badge:hover {
-  background: var(--color-primary);
-  color: var(--color-text-dark);
-  transform: translateY(-1px);
-}
-
-/* 15. NICKNAME INPUT FOCUS */
-.nickname-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-/* 16. DISABLED STATE */
-.primary-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 17. CHECKMARK */
-.checkmark {
-  color: var(--color-success);
+.pokemon-name {
   font-size: 12px;
+  color: var(--white);
 }
 
-/* 18. PIXEL ICONS (inline) */
-.icon-pixel {
-  width: 8px;
-  height: 8px;
-  display: inline-block;
-  background: var(--color-text);
-  vertical-align: middle;
-  margin-right: 4px;
+.original-name {
+  font-size: 8px;
+  color: var(--bg-light);
 }
 
-/* 19. RESPONSIVE FIXES (keep everything inside) */
-@media (max-width: 900px) {
-  .onboarding-container {
-    max-height: 96vh;
-  }
-  .egg-section {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .pokemon-card {
-    grid-template-columns: 1fr;
-    max-height: 60vh;
-    overflow-y: auto;
-  }
-  .pokemon-sprite {
-    width: 80px;
-    height: 80px;
-  }
-  .main-title {
-    font-size: 14px;
-  }
-  .step-circle {
-    width: 32px;
-    height: 32px;
-    font-size: 9px;
-  }
-  .primary-button {
-    padding: 8px 20px;
-    font-size: 9px;
-  }
+.rarity-badge {
+  font-size: 8px;
+  padding: 4px 6px;
+  border-radius: 0;
+  color: var(--white);
 }
 
-/* 20. PRINT (never) */
-@media print {
-  * {
-    display: none;
-  }
+.pokemon-image-container {
+  display: grid;
+  place-items: center;
+  margin: 12px 0;
 }
 
-.minting-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+.pokemon-sprite {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+}
+
+.pokemon-sprite.shiny-glow {
+  filter: drop-shadow(0 0 6px #fde047);
+}
+
+.pokemon-types {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.type-badge {
+  font-size: 8px;
+  padding: 4px 6px;
+  border-radius: 0;
+  color: var(--white);
+}
+
+.pokemon-stats h4,
+.pokemon-moves h4 {
+  font-size: 10px;
+  margin-bottom: 6px;
+  color: var(--accent-yellow);
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-bar {
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 8px;
+  width: 60px;
+  text-align: left;
+}
+
+.stat-value-container {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-mid);
+  position: relative;
+  border: 1px solid var(--bg-light);
+}
+
+.stat-fill {
+  height: 100%;
+}
+
+.stat-number {
+  position: absolute;
+  right: 4px;
+  top: -1px;
+  font-size: 8px;
+  color: var(--white);
+}
+
+.moves-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(5px);
 }
 
-.minting-modal {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px;
-  border-radius: 20px;
-  text-align: center;
-  max-width: 400px;
-  color: white;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+.move-badge {
+  font-size: 8px;
+  background: var(--bg-mid);
+  padding: 3px 5px;
+  border: 1px solid var(--bg-light);
 }
 
-.minting-modal h3 {
-  margin: 20px 0 10px 0;
-  font-size: 24px;
+.nickname-input-container {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
 }
 
-.minting-modal p {
-  margin: 10px 0;
-  opacity: 0.9;
+.nickname-input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 9px;
+  padding: 6px;
+  border: 2px solid var(--bg-light);
+  background: var(--bg-dark);
+  color: var(--white);
 }
 
-.minting-note {
-  font-size: 14px;
-  opacity: 0.7;
-  margin-top: 15px;
-}
-
-/* NFT Badge */
-.nft-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 25px;
-  display: inline-block;
-  margin: 15px 0;
-  font-weight: bold;
-  font-size: 16px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.nft-badge a {
-  color: white;
-  text-decoration: none;
-  opacity: 0.9;
-  transition: opacity 0.2s;
-}
-
-.nft-badge a:hover {
-  opacity: 1;
-  text-decoration: underline;
-}
-
-/* Network warning */
-.network-warning {
-  background: rgba(255, 193, 7, 0.1);
-  border: 2px solid #ffc107;
-  border-radius: 10px;
-  padding: 12px;
-  margin: 15px 0;
-  color: #ffc107;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Spinner animation (if not already in your CSS) */
-.spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid white;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+/* ---------- 11. RESPONSIVE ---------- */
+@media (max-width: 600px) {
+  .main-title {
+    font-size: 16px;
   }
-  100% {
-    transform: rotate(360deg);
+  .progress-steps {
+    font-size: 8px;
+  }
+  .step-circle {
+    width: 24px;
+    height: 24px;
+  }
+  .pokemon-card {
+    padding: 12px;
   }
 }

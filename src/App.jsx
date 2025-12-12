@@ -9,6 +9,7 @@ import GamePage from "./components/Main/GamePage";
 import AllPokemon from "./components/Inventory/AllPokemon";
 import TeamSelect from "./components/TeamSelect/TeamSelect";
 import Marketplace from "./components/Marketplace/Marketplace";
+import MintPokemon from "./components/Minting/MintPokemon";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -50,6 +51,10 @@ function App() {
       <Route
         path="/game/marketplace"
         element={user ? <Marketplace /> : <Navigate to="/" />}
+      />
+      <Route
+        path="/game/mint"
+        element={user ? <MintPokemon /> : <Navigate to="/" />}
       />
     </Routes>
   );

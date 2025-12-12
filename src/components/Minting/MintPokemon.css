@@ -1,0 +1,392 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================
+   PAGE WRAPPER
+============================================ */
+.mint-page-wrapper {
+  width: 100vw;
+  min-height: 100vh;
+  background: #0f380f; /* darkest green */
+  color: #9bbc0f;
+  font-family: "Press Start 2P", cursive;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* ============================================
+   MINT CONTAINER
+============================================ */
+.mint-container {
+  width: 100%;
+  max-width: 1200px;
+  background: #306230;
+  border: 4px solid #9bbc0f;
+  box-shadow: 6px 6px 0 #1a2f1a;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ============================================
+   HEADER
+============================================ */
+.mint-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background: #ffcb05;
+  border: 3px solid #c7a008;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #0f380f;
+  box-shadow: 3px 3px 0 #1a2f1a;
+}
+
+.back-btn:hover {
+  background: #f5b700;
+  transform: translate(1px, 1px);
+}
+
+.mint-title {
+  color: #ffcb05;
+  font-size: 20px;
+  text-align: center;
+  text-shadow: 2px 2px 0 #0f380f;
+  flex: 1;
+}
+
+.mint-counter {
+  font-size: 10px;
+  color: #9bbc0f;
+}
+
+/* ============================================
+   CONNECT WALLET
+============================================ */
+.connect-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 40px 0;
+}
+
+.connect-card {
+  background: #0f380f;
+  border: 4px solid #9bbc0f;
+  box-shadow: 4px 4px 0 #1a2f1a;
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.connect-card h2 {
+  color: #ffcb05;
+  margin-bottom: 10px;
+}
+
+.connect-wallet-btn {
+  background: #ffcb05;
+  color: #0f380f;
+  border: 3px solid #c7a008;
+  padding: 12px 18px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 3px 3px 0 #1a2f1a;
+}
+
+.connect-wallet-btn:hover {
+  background: #f5b700;
+}
+
+/* ============================================
+   WALLET CONNECTED
+============================================ */
+.wallet-connected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.checkmark {
+  color: #4ade80;
+}
+
+/* ============================================
+   HATCH CARD
+============================================ */
+.hatch-card {
+  background: #0f380f;
+  border: 4px solid #9bbc0f;
+  padding: 25px;
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  box-shadow: 6px 6px 0 #1a2f1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hatch-card h2 {
+  color: #ffcb05;
+  text-align: center;
+}
+
+.hatch-description,
+.hatch-info {
+  font-size: 10px;
+  margin: 6px 0;
+  text-align: center;
+}
+
+/* ============================================
+   EGG DISPLAY
+============================================ */
+.egg-display {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.egg-container,
+.egg-hatching-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.egg-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.egg {
+  width: 130px;
+  height: 170px;
+  background: #fffbdd;
+  border: 5px solid #9bbc0f;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 4px 4px 0 #1a2f1a;
+}
+
+.egg.idle:hover {
+  transform: translateY(-2px);
+}
+
+.egg.shaking {
+  animation: eggshake 0.25s infinite;
+}
+
+@keyframes eggshake {
+  0% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(-2px);
+  }
+}
+
+.egg-shell {
+  width: 100%;
+  height: 100%;
+}
+
+.crack {
+  position: absolute;
+  width: 40px;
+  height: 2px;
+  background: #0f380f;
+}
+
+.crack-1 {
+  top: 60px;
+  left: 30px;
+  transform: rotate(20deg);
+}
+.crack-2 {
+  top: 90px;
+  left: 50px;
+  transform: rotate(-10deg);
+}
+.crack-3 {
+  top: 120px;
+  left: 40px;
+  transform: rotate(15deg);
+}
+
+.hatching-text,
+.hint-text {
+  margin-top: 10px;
+  font-size: 10px;
+  color: #ffcb05;
+  text-align: center;
+}
+
+/* ============================================
+   REVEAL CARD
+============================================ */
+.reveal-card {
+  background: #0f380f;
+  border: 4px solid #9bbc0f;
+  padding: 25px;
+  max-width: 900px;
+  width: 100%;
+  margin: auto;
+  text-align: center;
+  box-shadow: 6px 6px 0 #1a2f1a;
+}
+
+.reveal-title {
+  color: #ffcb05;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.shiny-badge {
+  color: #ffcb05;
+  font-size: 12px;
+  margin-right: 6px;
+}
+
+.nft-badge {
+  margin-bottom: 10px;
+  font-size: 10px;
+}
+
+.opensea-link {
+  color: #ffcb05;
+  margin-left: 6px;
+  font-size: 10px;
+}
+
+.opensea-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   ACTION BUTTONS
+============================================ */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.mint-another-btn,
+.view-collection-btn {
+  background: #ffcb05;
+  border: 3px solid #c7a008;
+  padding: 12px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #0f380f;
+  box-shadow: 3px 3px 0 #1a2f1a;
+}
+
+.mint-another-btn:hover,
+.view-collection-btn:hover {
+  background: #f5b700;
+}
+
+/* ============================================
+   MINTING OVERLAY
+============================================ */
+.minting-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 56, 15, 0.88);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.minting-modal {
+  background: #306230;
+  border: 4px solid #9bbc0f;
+  padding: 25px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 6px 6px 0 #1a2f1a;
+  color: #ffcb05;
+}
+
+.minting-modal h3 {
+  margin: 12px 0;
+}
+
+.minting-note {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* ============================================
+   SPINNER
+============================================ */
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #9bbc0f;
+  border-top-color: #ffcb05;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   CONFETTI
+============================================ */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5000;
+}
+
+.confetti {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  animation: fall 1.2s linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(360deg);
+  }
+}

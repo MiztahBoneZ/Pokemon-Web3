@@ -1,34 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../Core/firebase";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDocs,
-  collection,
-} from "firebase/firestore";
-import "./OnboardingStyle.css";
-
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import PokemonNFTABI from "../../Core/PokemonNFT.json";
+import "./MintPokemon.css";
+
 const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
-export default function OnboardingPage() {
+export default function MintPokemon() {
   const [walletAddress, setWalletAddress] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
   const [pokemon, setPokemon] = useState(null);
   const [isHatching, setIsHatching] = useState(false);
   const [showEggAnimation, setShowEggAnimation] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [pokemonNickname, setPokemonNickname] = useState("");
-  const [showNicknameInput, setShowNicknameInput] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   const [nftTokenId, setNftTokenId] = useState(null);
   const [mintingStatus, setMintingStatus] = useState("");
+  const [mintCount, setMintCount] = useState(0);
   const navigate = useNavigate();
   const db = getFirestore();
+
+  useEffect(() => {
+    checkWallet();
+  }, []);
+
+  const checkWallet = async () => {
+    if (!window.ethereum) return;
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.listAccounts();
+
+      if (accounts.length > 0) {
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+
+        // Check network
+        const network = await provider.getNetwork();
+        if (network.chainId === 11155111n) {
+          setWalletAddress(address);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking wallet:", error);
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      alert("MetaMask not detected. Please install MetaMask extension.");
+      return;
+    }
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+
+      // Ensure on Sepolia
+      const network = await provider.getNetwork();
+      if (network.chainId !== 11155111n) {
+        alert("Please switch to Sepolia test network in MetaMask!");
+        return;
+      }
+
+      setWalletAddress(address);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to connect wallet.");
+    }
+  };
 
   const getRarity = (stats) => {
     const total = Object.values(stats).reduce((sum, val) => sum + val, 0);
@@ -43,37 +86,6 @@ export default function OnboardingPage() {
     return { tier: "Common", color: "#CCC", glow: "#888" };
   };
 
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      alert("MetaMask not detected. Please install MetaMask extension.");
-      return;
-    }
-    try {
-      setIsConnecting(true);
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
-
-      // Ensure asa sepolia para walang bayad
-      const network = await provider.getNetwork();
-      if (network.chainId !== 11155111n) {
-        alert("Please switch to Sepolia test network in MetaMask!");
-        setIsConnecting(false);
-        return;
-      }
-
-      setWalletAddress(address);
-      setIsConnecting(false);
-      setCurrentStep(2);
-    } catch (err) {
-      console.error(err);
-      setIsConnecting(false);
-      alert("Failed to connect wallet. Make sure MetaMask is unlocked.");
-    }
-  };
-
-  // Simple metadata creation (no IPFS for now - use data URI)
   const createMetadataURI = (metadata) => {
     const nftMetadata = {
       name: `${metadata.name.charAt(0).toUpperCase() + metadata.name.slice(1)}${
@@ -108,7 +120,6 @@ export default function OnboardingPage() {
       ],
     };
 
-    // Create data URI (for testing - in production use IPFS)
     const jsonString = JSON.stringify(nftMetadata);
     const base64 = btoa(unescape(encodeURIComponent(jsonString)));
     return `data:application/json;base64,${base64}`;
@@ -131,15 +142,7 @@ export default function OnboardingPage() {
       const tokenURI = createMetadataURI(pokemonData);
 
       setMintingStatus("Sending transaction to blockchain...");
-      console.log("Minting NFT with data:", {
-        to: walletAddress,
-        pokemonId: pokemonData.pokemonId,
-        name: pokemonData.name,
-        rarity: pokemonData.rarity,
-        isShiny: pokemonData.isShiny,
-      });
 
-      // Call the smart contract mint function
       const tx = await contract.mintPokemon(
         walletAddress,
         tokenURI,
@@ -153,13 +156,11 @@ export default function OnboardingPage() {
       console.log("Transaction sent:", tx.hash);
       setMintingStatus("Waiting for confirmation...");
 
-      // Wait for transaction to be mined
       const receipt = await tx.wait();
       console.log("Transaction confirmed!", receipt);
 
       setMintingStatus("Extracting token ID...");
 
-      // Extract tokenId from event logs
       let tokenId = null;
       for (const log of receipt.logs) {
         try {
@@ -187,11 +188,10 @@ export default function OnboardingPage() {
       setIsMinting(false);
       setMintingStatus("");
 
-      // User-friendly error messages
       if (error.code === "ACTION_REJECTED") {
         throw new Error("You rejected the transaction in MetaMask");
       } else if (error.message.includes("insufficient funds")) {
-        throw new Error("Insuficcient Funds");
+        throw new Error("Insufficient Funds");
       } else if (error.message.includes("wrong network")) {
         throw new Error("Please switch to Sepolia test network in MetaMask");
       } else {
@@ -206,16 +206,22 @@ export default function OnboardingPage() {
       return;
     }
 
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please log in first!");
+      return;
+    }
+
     setIsHatching(true);
     setShowEggAnimation(true);
+    setPokemon(null);
+    setNftTokenId(null);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      console.log("Generating random Pokémon...");
-
       const randomId = Math.floor(Math.random() * 151) + 1;
-      const isShiny = Math.random() < 0.01; // 1% shiny chance
+      const isShiny = Math.random() < 0.01;
 
       const response = await fetch(
         `https://pokeapi.co/api/v2/pokemon/${randomId}`
@@ -263,60 +269,34 @@ export default function OnboardingPage() {
         createdAt: new Date().toISOString(),
       };
 
-      console.log(
-        "Pokémon generated:",
-        hatchedPokemon.name,
-        "Rarity:",
-        hatchedPokemon.rarity
-      );
-
       setShowEggAnimation(false);
       setPokemon(hatchedPokemon);
       setShowConfetti(true);
-      setCurrentStep(3);
 
       setTimeout(() => setShowConfetti(false), 3000);
 
-      console.log("Starting blockchain mint...");
       const { tokenId, txHash } = await mintNFT(hatchedPokemon);
-      console.log("NFT minted! Token ID:", tokenId, "Tx:", txHash);
 
-      // Store in Firebase with NFT reference
-      const user = auth.currentUser;
-      if (user) {
-        console.log("Saving to Firebase...");
+      const pokemonFirebaseId = crypto.randomUUID();
+      const inventoryRef = doc(
+        db,
+        "users",
+        user.uid,
+        "inventory",
+        pokemonFirebaseId
+      );
 
-        const userRef = doc(db, "users", user.uid);
-        await setDoc(
-          userRef,
-          {
-            wallet: walletAddress,
-            hasCompletedOnboarding: true,
-            UserFirebaseID: user.uid,
-          },
-          { merge: true }
-        );
+      await setDoc(inventoryRef, {
+        ...hatchedPokemon,
+        nftTokenId: tokenId,
+        nftTxHash: txHash,
+        contractAddress: CONTRACT_ADDRESS,
+        onChain: true,
+        blockchain: "sepolia",
+      });
 
-        const pokemonFirebaseId = crypto.randomUUID();
-        const inventoryRef = doc(
-          db,
-          "users",
-          user.uid,
-          "inventory",
-          pokemonFirebaseId
-        );
-
-        await setDoc(inventoryRef, {
-          ...hatchedPokemon,
-          nftTokenId: tokenId,
-          nftTxHash: txHash,
-          contractAddress: CONTRACT_ADDRESS,
-          onChain: true,
-          blockchain: "sepolia",
-        });
-
-        console.log("Saved to Firebase successfully!");
-      }
+      setMintCount((prev) => prev + 1);
+      console.log("Saved to Firebase successfully!");
     } catch (error) {
       console.error("Hatching/Minting failed:", error);
       alert(`Failed to hatch Pokémon: ${error.message}`);
@@ -329,77 +309,10 @@ export default function OnboardingPage() {
     }
   };
 
-  const saveNickname = async () => {
-    if (!pokemonNickname.trim()) {
-      alert("Please enter a nickname!");
-      return;
-    }
-
-    try {
-      setIsMinting(true);
-      setMintingStatus("Updating nickname on blockchain...");
-
-      // Update nickname on blockchain if NFT exists
-      if (nftTokenId) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          PokemonNFTABI.abi,
-          signer
-        );
-
-        console.log(
-          "Updating nickname for token",
-          nftTokenId,
-          "to",
-          pokemonNickname
-        );
-        const tx = await contract.updateNickname(nftTokenId, pokemonNickname);
-
-        setMintingStatus("Waiting for confirmation...");
-        await tx.wait();
-
-        console.log("Nickname updated on-chain!");
-      }
-
-      const updatedPokemon = { ...pokemon, nickname: pokemonNickname };
-      setPokemon(updatedPokemon);
-
-      // Update Firebase
-      const user = auth.currentUser;
-      if (user) {
-        const inventorySnapshot = await getDocs(
-          collection(db, "users", user.uid, "inventory")
-        );
-        const pokemonDoc = inventorySnapshot.docs.find(
-          (doc) => doc.data().nftTokenId === nftTokenId
-        );
-
-        if (pokemonDoc) {
-          await setDoc(
-            doc(db, "users", user.uid, "inventory", pokemonDoc.id),
-            { nickname: pokemonNickname },
-            { merge: true }
-          );
-          console.log("Nickname updated in Firebase");
-        }
-      }
-
-      setShowNicknameInput(false);
-      setIsMinting(false);
-      setMintingStatus("");
-    } catch (error) {
-      console.error("Failed to save nickname:", error);
-      setIsMinting(false);
-      setMintingStatus("");
-
-      if (error.code === "ACTION_REJECTED") {
-        alert("You cancelled the transaction");
-      } else {
-        alert(`Failed to update nickname: ${error.message}`);
-      }
-    }
+  const mintAnother = () => {
+    setPokemon(null);
+    setNftTokenId(null);
+    setShowConfetti(false);
   };
 
   const getTypeColor = (type) => {
@@ -427,7 +340,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="onboarding-wrapper">
+    <div className="mint-page-wrapper">
       {showConfetti && (
         <div className="confetti-container">
           {[...Array(50)].map((_, i) => (
@@ -455,118 +368,93 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      <div className="onboarding-container">
-        <h1 className="main-title">🎮 Trainer Onboarding</h1>
-
-        <div className="progress-steps">
-          <div
-            className={`step ${currentStep >= 1 ? "active" : ""} ${
-              currentStep > 1 ? "completed" : ""
-            }`}
-          >
-            <div className="step-circle">1</div>
-            <span>Connect Wallet</span>
-          </div>
-          <div className="step-line"></div>
-          <div
-            className={`step ${currentStep >= 2 ? "active" : ""} ${
-              currentStep > 2 ? "completed" : ""
-            }`}
-          >
-            <div className="step-circle">2</div>
-            <span>Hatch NFT</span>
-          </div>
-          <div className="step-line"></div>
-          <div className={`step ${currentStep >= 3 ? "active" : ""}`}>
-            <div className="step-circle">3</div>
-            <span>Start Adventure</span>
-          </div>
+      <div className="mint-container">
+        <div className="mint-header">
+          <button className="back-btn" onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+          <h1 className="mint-title">🥚 Hatch New Pokémon</h1>
+          {mintCount > 0 && (
+            <div className="mint-counter">Minted this session: {mintCount}</div>
+          )}
         </div>
 
         {!walletAddress ? (
-          <div className="step-content">
-            <h2>🔗 Connect Your Wallet</h2>
-            <p className="step-description">
-              Connect your MetaMask wallet to begin your journey
-            </p>
-            <p className="network-warning">
-              Make sure you're on Sepolia test network
-            </p>
-            <button
-              className="primary-button"
-              onClick={connectWallet}
-              disabled={isConnecting}
-            >
-              {isConnecting ? (
-                <>
-                  <span className="spinner"></span> Connecting…
-                </>
-              ) : (
-                "Connect Wallet"
-              )}
-            </button>
+          <div className="connect-section">
+            <div className="connect-card">
+              <h2>Connect Your Wallet</h2>
+              <p>Connect MetaMask to start hatching Pokémon NFTs</p>
+              <button className="connect-wallet-btn" onClick={connectWallet}>
+                Connect Wallet
+              </button>
+            </div>
           </div>
         ) : !pokemon ? (
-          <div className="egg-section">
-            <div className="egg-content">
-              <div className="wallet-connected">
-                <span className="checkmark">✓</span>
-                <span>Wallet Connected</span>
-                <p className="wallet-address">
-                  {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}
-                </p>
-              </div>
-
-              <h2>Hatch Your Starter NFT</h2>
-              <p className="step-description">
-                Click the egg to hatch your random starter Pokémon! It will be
-                minted as an NFT on the blockchain.
-              </p>
-              <p className="network-warning">
-                Requires testnet ETH for gas. Get free ETH from faucets if
-                needed!
-              </p>
+          <div className="hatch-section">
+            <div className="wallet-connected">
+              <span className="checkmark">✓</span>
+              <span>
+                Connected: {walletAddress.slice(0, 6)}...
+                {walletAddress.slice(-4)}
+              </span>
             </div>
 
-            <div className="egg-display">
-              {showEggAnimation ? (
-                <div className="egg-hatching-container">
-                  <div className="egg-wrapper">
-                    <div className="egg shaking">
-                      <div className="egg-shell"></div>
-                      <div className="crack crack-1"></div>
-                      <div className="crack crack-2"></div>
-                      <div className="crack crack-3"></div>
+            <div className="hatch-card">
+              <h2>Hatch a Random Pokémon</h2>
+              <p className="hatch-description">
+                Each hatch gives you a unique Pokémon NFT with randomized stats!
+              </p>
+              <p className="hatch-info">
+                • Random Gen 1 Pokémon (1-151)
+                <br />
+                • 1% chance for Shiny ✨<br />
+                • Unique randomized stats
+                <br />
+                • 4 random moves
+                <br />• Minted as NFT on Sepolia
+              </p>
+
+              <div className="egg-display">
+                {showEggAnimation ? (
+                  <div className="egg-hatching-container">
+                    <div className="egg-wrapper">
+                      <div className="egg shaking">
+                        <div className="egg-shell"></div>
+                        <div className="crack crack-1"></div>
+                        <div className="crack crack-2"></div>
+                        <div className="crack crack-3"></div>
+                      </div>
+                      <div className="egg-glow"></div>
                     </div>
-                    <div className="egg-glow"></div>
+                    <p className="hatching-text">Your egg is hatching...</p>
                   </div>
-                  <p className="hatching-text">Your egg is hatching...</p>
-                </div>
-              ) : (
-                <div className="egg-container">
-                  <button
-                    className="egg-button"
-                    onClick={hatchPokemon}
-                    disabled={isHatching}
-                  >
-                    <div className="egg idle">
-                      <div className="egg-shell"></div>
-                    </div>
-                  </button>
-                  <p className="hint-text">Click the egg to hatch!</p>
-                </div>
-              )}
+                ) : (
+                  <div className="egg-container">
+                    <button
+                      className="egg-button"
+                      onClick={hatchPokemon}
+                      disabled={isHatching}
+                    >
+                      <div className="egg idle">
+                        <div className="egg-shell"></div>
+                      </div>
+                    </button>
+                    <p className="hint-text">Click the egg to hatch!</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="pokemon-reveal-section">
-            <div className="reveal-animation">
+          <div className="reveal-section">
+            <div className="reveal-card">
               <h2 className="reveal-title">
                 {pokemon.isShiny && (
                   <span className="shiny-badge">✨ SHINY!</span>
                 )}
                 Congratulations!
               </h2>
+
               {nftTokenId && (
                 <div className="nft-badge">
                   🎫 NFT Token ID: #{nftTokenId}
@@ -574,12 +462,13 @@ export default function OnboardingPage() {
                     href={`https://testnets.opensea.io/assets/sepolia/${CONTRACT_ADDRESS}/${nftTokenId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ marginLeft: "10px", fontSize: "12px" }}
+                    className="opensea-link"
                   >
                     View on OpenSea ↗
                   </a>
                 </div>
               )}
+
               <div
                 className="pokemon-card"
                 style={{
@@ -588,12 +477,7 @@ export default function OnboardingPage() {
                 }}
               >
                 <div className="card-header">
-                  <h3 className="pokemon-name">
-                    {pokemon.nickname || pokemon.name.toUpperCase()}
-                    {pokemon.nickname && (
-                      <span className="original-name">({pokemon.name})</span>
-                    )}
-                  </h3>
+                  <h3 className="pokemon-name">{pokemon.name.toUpperCase()}</h3>
                   <span
                     className="rarity-badge"
                     style={{
@@ -666,48 +550,19 @@ export default function OnboardingPage() {
                     ))}
                   </div>
                 </div>
-
-                {!showNicknameInput ? (
-                  <button
-                    className="secondary-button"
-                    onClick={() => setShowNicknameInput(true)}
-                    disabled={isMinting}
-                  >
-                    Give Nickname (Updates Blockchain)
-                  </button>
-                ) : (
-                  <div className="nickname-input-container">
-                    <input
-                      type="text"
-                      value={pokemonNickname}
-                      onChange={(e) => setPokemonNickname(e.target.value)}
-                      placeholder="Enter nickname..."
-                      maxLength={12}
-                      className="nickname-input"
-                    />
-                    <button
-                      className="small-button"
-                      onClick={saveNickname}
-                      disabled={isMinting}
-                    >
-                      {isMinting ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      className="small-button cancel"
-                      onClick={() => setShowNicknameInput(false)}
-                      disabled={isMinting}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
               </div>
-              <button
-                className="primary-button large"
-                onClick={() => navigate("/game")}
-              >
-                Start Your Adventure!
-              </button>
+
+              <div className="action-buttons">
+                <button className="mint-another-btn" onClick={mintAnother}>
+                  Hatch Another Pokémon
+                </button>
+                <button
+                  className="view-collection-btn"
+                  onClick={() => navigate("/all-pokemon")}
+                >
+                  View My Collection
+                </button>
+              </div>
             </div>
           </div>
         )}
