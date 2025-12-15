@@ -89,22 +89,29 @@ export default function TeamSelect({
   /*
       Confirmation to save current selected team to firestore db
   */
-  const handleConfirm = async () => {
+  const handleStartAdventure = async () => {
+    if (team.length === 0) {
+      showToast("Select at least 1 Pokémon!");
+      return;
+    }
+
     try {
       const user = auth.currentUser;
       if (!user) return;
 
+      // Save active team
       const activeRef = doc(frdb, "users", user.uid, "activeTeam", "team");
-
       await setDoc(activeRef, {
         slots: team.map((m) => m.id),
         updatedAt: serverTimestamp(),
       });
 
-      showToast("Team updated!");
-      onConfirm(team);
+      showToast("Team saved!");
+
+      // Navigate to roguelike game with selected team
+      navigate("/roguelike", { state: { selectedTeam: team } });
     } catch (err) {
-      console.error("Failed to save active team:", err);
+      console.error("Failed to save team:", err);
       showToast("Failed to save team!");
     }
   };
@@ -169,12 +176,8 @@ export default function TeamSelect({
       </div>
 
       <div className="team-actions">
-        <button
-          className="team-btn confirm"
-          disabled={team.length === 0}
-          onClick={handleConfirm}
-        >
-          Confirm
+        <button className="team-btn confirm" onClick={handleStartAdventure}>
+          🎮 Start Adventure
         </button>
         <button className="team-btn cancel" onClick={onBack}>
           Cancel

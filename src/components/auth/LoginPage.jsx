@@ -35,7 +35,7 @@ export default function LoginPage() {
     if (!em) return setError("Email required.");
     if (!validEmail(em)) return setError("Invalid email format.");
     const pwCheck = strongPassword(password);
-    if (!pwCheck.ok) return setError("Password needs " + pwCheck.msg + ".");
+    if (!pwCheck.ok) return setError("Invalid Password");
 
     setIsVerifyingWallet(true);
     setWaitingForWallet(true);

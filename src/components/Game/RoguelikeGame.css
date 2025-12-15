@@ -1,0 +1,279 @@
+.game-start-container,
+.game-over-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.start-card,
+.game-over-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.start-card h1,
+.game-over-card h1 {
+  text-align: center;
+  font-size: 42px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+/* Team Preview */
+.team-preview {
+  margin: 30px 0;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 15px;
+}
+
+.team-preview h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.team-member {
+  text-align: center;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  transition: all 0.3s;
+}
+
+.team-member:hover {
+  transform: translateY(-5px);
+  border-color: #667eea;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.team-member img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.team-member p {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+/* Rules Section */
+.rules-section {
+  margin: 30px 0;
+  padding: 25px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 15px;
+  border-left: 4px solid #667eea;
+}
+
+.rules-section h4 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.rules-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rules-section li {
+  font-size: 16px;
+  padding: 10px 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Buttons */
+.start-run-btn,
+.back-btn,
+.play-again-btn,
+.menu-btn {
+  width: 100%;
+  padding: 18px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.start-run-btn,
+.play-again-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.start-run-btn:hover,
+.play-again-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.back-btn,
+.menu-btn {
+  background: #f5f5f5;
+  color: #333;
+  border: 2px solid #ddd;
+}
+
+.back-btn:hover,
+.menu-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+/* Stats Summary */
+.stats-summary {
+  margin: 30px 0;
+  padding: 25px;
+  background: #f5f5f5;
+  border-radius: 15px;
+}
+
+.stats-summary h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 16px;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-row span:first-child {
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+/* Final Team State */
+.team-final-state {
+  margin: 30px 0;
+}
+
+.team-final-state h4 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+}
+
+.team-member-final {
+  text-align: center;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #4ade80;
+  transition: all 0.3s;
+}
+
+.team-member-final.fainted {
+  opacity: 0.5;
+  border-color: #ef4444;
+  filter: grayscale(100%);
+}
+
+.team-member-final img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.team-member-final p {
+  margin: 5px 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.team-member-final .level {
+  color: #667eea;
+  font-size: 12px;
+}
+
+.team-member-final .hp {
+  color: #666;
+  font-size: 12px;
+}
+
+.game-over-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.game-over-actions button {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .start-card,
+  .game-over-card {
+    padding: 25px;
+  }
+
+  .start-card h1,
+  .game-over-card h1 {
+    font-size: 32px;
+  }
+
+  .team-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .team-member img,
+  .team-member-final img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .game-over-actions {
+    flex-direction: column;
+  }
+}
