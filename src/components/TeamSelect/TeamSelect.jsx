@@ -23,6 +23,10 @@ export default function TeamSelect({
   const navigate = useNavigate();
 
   useEffect(() => {
+    /*  
+        Attempts to fetch inventory of current user and sorts data according to 
+        created date  
+    */
     const fetchInventory = async () => {
       try {
         const user = auth.currentUser;
@@ -44,15 +48,15 @@ export default function TeamSelect({
 
     fetchInventory();
   }, []);
-
+  /*
+      Toggles active pokemons upto a maximum of six pokemons
+  */
   const toggleMon = (mon) => {
     const already = team.find((t) => t.id === mon.id);
-
     if (already) {
       setTeam(team.filter((t) => t.id !== mon.id));
       return;
     }
-
     if (team.length >= 6) return;
     setTeam([...team, mon]);
   };
@@ -80,9 +84,11 @@ export default function TeamSelect({
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000); // hide after 3s
+    setTimeout(() => setToastMessage(""), 3000);
   };
-
+  /*
+      Confirmation to save current selected team to firestore db
+  */
   const handleConfirm = async () => {
     try {
       const user = auth.currentUser;

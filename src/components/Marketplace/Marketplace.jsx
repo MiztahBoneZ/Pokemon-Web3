@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 import { auth } from "../../Core/firebase";
 import {
@@ -11,10 +12,10 @@ import {
   deleteDoc,
   where,
 } from "firebase/firestore";
-import PokemonNFTABI from "./PokemonNFT.json";
+import PokemonNFTABI from "../../Core/PokemonNFT.json";
 import "./Marketplace.css";
 
-const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_FROM_REMIX";
+const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
 export default function Marketplace() {
   const [listings, setListings] = useState([]);
@@ -24,12 +25,15 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("newest");
   const [filterRarity, setFilterRarity] = useState("all");
   const db = getFirestore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkWalletConnection();
     loadMarketplace();
   }, []);
-
+  /*
+      Check if there is a valid wallet connection from MetaMask
+  */
   const checkWalletConnection = async () => {
     if (window.ethereum) {
       try {
@@ -46,6 +50,9 @@ export default function Marketplace() {
     }
   };
 
+  /*
+      If no connected wallet is detected attempt to create a wallet connection with MetaMask 
+  */
   const connectWallet = async () => {
     if (!window.ethereum) {
       alert("Please install MetaMask!");
@@ -63,6 +70,10 @@ export default function Marketplace() {
     }
   };
 
+  /*
+      Load Marketplace Listing data using connected wallet's NFT data and supported with Firestore DB
+      data for fetching pokemon data
+  */
   const loadMarketplace = async () => {
     try {
       setLoading(true);
@@ -147,10 +158,14 @@ export default function Marketplace() {
       setLoading(false);
     }
   };
-
+  /*
+      Removes Firestore pokemon data from the seller after a user purchases their listing,
+      adds a couple of safety check to see if Seller data exists in the database and throws
+      errors accordingly.
+  */
   const removePokemonFromSeller = async (tokenId, sellerAddress) => {
     try {
-      console.log("Removing Pokemon from seller's Firebase...");
+      console.log("Removing Pokemon from seller's Inventory...");
 
       const usersSnapshot = await getDocs(collection(db, "users"));
       let sellerUid = null;
@@ -191,7 +206,10 @@ export default function Marketplace() {
       console.error("Error removing Pokemon from seller:", error);
     }
   };
-
+  /*
+      Adds purchased Pokemon to buyer's firestore DB, also adds a couple of checks to see if 
+      User exists in the firestore DB otherwise throws errors accordingly
+  */
   const addPokemonToBuyer = async (listing) => {
     try {
       console.log("Adding Pokemon to buyer's Firebase...");
@@ -240,7 +258,11 @@ export default function Marketplace() {
       console.error("Error adding Pokemon to buyer:", error);
     }
   };
-
+  /*
+      Purchases the Pokemon from the NFT blockchain and transfers ownership to the buyer from the seller,
+      this will also trigger the firestore write functions to remove from seller and add to buyer the
+      supplementary pokemon data not stored in the blockchain.
+  */
   const buyNFT = async (listing) => {
     if (!walletAddress) {
       alert("Please connect your wallet first!");
@@ -307,7 +329,9 @@ export default function Marketplace() {
       setBuying(null);
     }
   };
-
+  /* 
+      Color according to rarity, duh
+  */
   const getRarityColor = (rarity) => {
     const colors = {
       Legendary: "#FFD700",
@@ -318,7 +342,9 @@ export default function Marketplace() {
     };
     return colors[rarity] || "#CCC";
   };
-
+  /* 
+      Color according to type, duuuuuh
+  */
   const getTypeColor = (type) => {
     const colors = {
       normal: "#A8A878",
@@ -343,7 +369,9 @@ export default function Marketplace() {
     return colors[type] || "#777";
   };
 
-  // Filter and sort listings
+  /*
+      Search filtering according to rarity, created date, or price
+  */
   const filteredListings = listings
     .filter((listing) => {
       if (filterRarity === "all") return true;
@@ -370,9 +398,12 @@ export default function Marketplace() {
 
   return (
     <div className="marketplace-container">
+      <button className="back-btn" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
       <header className="marketplace-header">
-        <h1>🏪 Pokémon Marketplace</h1>
-        <p className="subtitle">Buy and sell Pokémon NFTs</p>
+        <h1>Pokémon Marketplace</h1>
+        <p className="subtitle">Buy and sell your Pokemons</p>
 
         {!walletAddress ? (
           <button className="connect-wallet-btn" onClick={connectWallet}>
@@ -381,7 +412,8 @@ export default function Marketplace() {
         ) : (
           <div className="wallet-info">
             <span className="wallet-badge">
-              ✓ {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              Wallet Address: {walletAddress.slice(0, 6)}...
+              {walletAddress.slice(-4)}
             </span>
           </div>
         )}
@@ -412,13 +444,12 @@ export default function Marketplace() {
             <option value="rarity">Rarity</option>
           </select>
         </div>
-
         <button
           className="refresh-btn"
           onClick={loadMarketplace}
           disabled={loading}
         >
-          {loading ? "Loading..." : "🔄 Refresh"}
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 

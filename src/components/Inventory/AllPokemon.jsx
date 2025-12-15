@@ -7,7 +7,7 @@ import PokemonNFTABI from "../../Core/PokemonNFT.json";
 import "./AllPokemon.css";
 import PokemonStatsModal from "./PokemonStatsModal.jsx";
 
-const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D";
+const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
 export default function AllPokemon({ back }) {
   const navigate = useNavigate();
