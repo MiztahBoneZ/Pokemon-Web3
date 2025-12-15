@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
+import { auth } from "../../Core/firebase";
 import {
   getFirestore,
   collection,
   query,
-  where,
   getDocs,
+  doc,
+  setDoc,
+  deleteDoc,
+  where,
 } from "firebase/firestore";
-import PokemonNFTABI from "../../Core/PokemonNFT.json";
+import PokemonNFTABI from "./PokemonNFT.json";
 import "./Marketplace.css";
 
-const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
+const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_FROM_REMIX";
 
 export default function Marketplace() {
   const [listings, setListings] = useState([]);
@@ -21,7 +24,6 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("newest");
   const [filterRarity, setFilterRarity] = useState("all");
   const db = getFirestore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     checkWalletConnection();
@@ -71,7 +73,6 @@ export default function Marketplace() {
         provider
       );
 
-      // Get all listed token IDs from contract
       const listedTokenIds = await contract.getAllListings();
       console.log("Listed tokens:", listedTokenIds);
 
@@ -79,31 +80,21 @@ export default function Marketplace() {
 
       for (const tokenId of listedTokenIds) {
         try {
-          // Get listing details from contract
           const listing = await contract.getListing(tokenId);
-
           if (!listing.isActive) continue;
 
-          // Get Pokemon metadata from contract
           const pokemonData = await contract.getPokemonData(tokenId);
-
-          // Get owner
           const owner = await contract.ownerOf(tokenId);
 
-          // Try to get additional data from Firebase (stats, moves, sprite)
+          // Get Firebase data
           let firebaseData = null;
           try {
-            const inventoryQuery = query(collection(db, "users"));
-            const snapshot = await getDocs(inventoryQuery);
+            const usersSnapshot = await getDocs(collection(db, "users"));
 
-            for (const userDoc of snapshot.docs) {
-              const userInventoryRef = collection(
-                db,
-                "users",
-                userDoc.id,
-                "inventory"
+            for (const userDoc of usersSnapshot.docs) {
+              const inventorySnapshot = await getDocs(
+                collection(db, "users", userDoc.id, "inventory")
               );
-              const inventorySnapshot = await getDocs(userInventoryRef);
 
               const found = inventorySnapshot.docs.find(
                 (doc) => doc.data().nftTokenId === tokenId.toString()
@@ -133,7 +124,6 @@ export default function Marketplace() {
               rarity: pokemonData.rarity,
               isShiny: pokemonData.isShiny,
               createdAt: Number(pokemonData.createdAt),
-              // Firebase data (if available)
               sprite:
                 firebaseData?.sprite ||
                 `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonData.pokemonId}.png`,
@@ -141,6 +131,7 @@ export default function Marketplace() {
               stats: firebaseData?.stats || {},
               moves: firebaseData?.moves || [],
             },
+            firebaseData: firebaseData, // Keep full data for transfer
           });
         } catch (error) {
           console.error(`Error loading token ${tokenId}:`, error);
@@ -157,6 +148,99 @@ export default function Marketplace() {
     }
   };
 
+  const removePokemonFromSeller = async (tokenId, sellerAddress) => {
+    try {
+      console.log("Removing Pokemon from seller's Firebase...");
+
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      let sellerUid = null;
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userData = userDoc.data();
+        if (
+          userData.wallet &&
+          userData.wallet.toLowerCase() === sellerAddress.toLowerCase()
+        ) {
+          sellerUid = userDoc.id;
+          break;
+        }
+      }
+
+      if (!sellerUid) {
+        console.log("Seller user not found in Firebase");
+        return;
+      }
+
+      const inventorySnapshot = await getDocs(
+        collection(db, "users", sellerUid, "inventory")
+      );
+
+      const pokemonDoc = inventorySnapshot.docs.find(
+        (doc) => doc.data().nftTokenId === tokenId
+      );
+
+      if (pokemonDoc) {
+        await deleteDoc(
+          doc(db, "users", sellerUid, "inventory", pokemonDoc.id)
+        );
+        console.log("Removed Pokemon from seller's inventory");
+      } else {
+        console.log("Pokemon not found in seller's inventory");
+      }
+    } catch (error) {
+      console.error("Error removing Pokemon from seller:", error);
+    }
+  };
+
+  const addPokemonToBuyer = async (listing) => {
+    try {
+      console.log("Adding Pokemon to buyer's Firebase...");
+
+      const user = auth.currentUser;
+      if (!user) {
+        console.log("User not logged in");
+        return;
+      }
+
+      const pokemonData = listing.firebaseData || {
+        pokemonId: listing.pokemon.pokemonId,
+        name: listing.pokemon.name,
+        nickname: listing.pokemon.nickname,
+        sprite: listing.pokemon.sprite,
+        types: listing.pokemon.types,
+        stats: listing.pokemon.stats,
+        moves: listing.pokemon.moves,
+        rarity: listing.pokemon.rarity,
+        isShiny: listing.pokemon.isShiny,
+        createdAt: new Date(listing.pokemon.createdAt * 1000).toISOString(),
+      };
+
+      const pokemonFirebaseId = crypto.randomUUID();
+      const inventoryRef = doc(
+        db,
+        "users",
+        user.uid,
+        "inventory",
+        pokemonFirebaseId
+      );
+
+      await setDoc(inventoryRef, {
+        ...pokemonData,
+        nftTokenId: listing.tokenId,
+        nftTxHash: listing.firebaseData?.nftTxHash || "",
+        contractAddress: CONTRACT_ADDRESS,
+        onChain: true,
+        blockchain: "sepolia",
+        purchasedAt: new Date().toISOString(),
+        purchasePrice: ethers.formatEther(listing.price),
+      });
+
+      console.log("Added Pokemon to buyer's inventory");
+    } catch (error) {
+      console.error("Error adding Pokemon to buyer:", error);
+    }
+  };
+
   const buyNFT = async (listing) => {
     if (!walletAddress) {
       alert("Please connect your wallet first!");
@@ -165,6 +249,12 @@ export default function Marketplace() {
 
     if (listing.seller.toLowerCase() === walletAddress.toLowerCase()) {
       alert("You cannot buy your own NFT!");
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please log in to purchase!");
       return;
     }
 
@@ -193,9 +283,16 @@ export default function Marketplace() {
 
       console.log("Transaction sent:", tx.hash);
       await tx.wait();
-      console.log("Purchase complete!");
+      console.log("Purchase complete on blockchain!");
 
-      alert("Purchase successful! 🎉");
+      console.log("Syncing with Firebase...");
+
+      await removePokemonFromSeller(listing.tokenId, listing.seller);
+
+      await addPokemonToBuyer(listing);
+
+      console.log("Firebase sync complete!");
+      alert("Purchase successful! Check your collection! 🎉");
 
       // Reload marketplace
       await loadMarketplace();
@@ -268,32 +365,26 @@ export default function Marketplace() {
           (rarityOrder[a.pokemon.rarity] || 0)
         );
       }
-      return b.pokemon.createdAt - a.pokemon.createdAt;
+      return b.pokemon.createdAt - a.pokemon.createdAt; // newest first
     });
 
   return (
     <div className="marketplace-container">
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        ← Back
-      </button>
-
       <header className="marketplace-header">
-        <h1>Pokémon Marketplace</h1>
-        <p className="subtitle">Buy and sell your friends</p>
+        <h1>🏪 Pokémon Marketplace</h1>
+        <p className="subtitle">Buy and sell Pokémon NFTs</p>
 
-        <div className="wallet-controls">
-          {!walletAddress ? (
-            <button className="connect-wallet-btn" onClick={connectWallet}>
-              Connect Wallet to Buy
-            </button>
-          ) : (
-            <div className="wallet-info">
-              <span className="wallet-badge">
-                ✓ {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-              </span>
-            </div>
-          )}
-        </div>
+        {!walletAddress ? (
+          <button className="connect-wallet-btn" onClick={connectWallet}>
+            Connect Wallet to Buy
+          </button>
+        ) : (
+          <div className="wallet-info">
+            <span className="wallet-badge">
+              ✓ {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </span>
+          </div>
+        )}
       </header>
 
       <div className="marketplace-controls">

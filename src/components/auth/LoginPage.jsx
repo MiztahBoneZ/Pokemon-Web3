@@ -6,7 +6,6 @@ import { ethers } from "ethers";
 import { useNavigate, Link } from "react-router-dom";
 import "./AuthPageStyle.css";
 
-/* ---------- helpers ---------- */
 const strongPassword = (pw) => {
   if (pw.length < 8) return { ok: false, msg: "≥ 8 chars" };
   if (!/[A-Z]/.test(pw)) return { ok: false, msg: "uppercase letter" };
@@ -32,7 +31,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    /* ---------- stronger client-side checks ---------- */
     const em = email.trim();
     if (!em) return setError("Email required.");
     if (!validEmail(em)) return setError("Invalid email format.");
@@ -43,21 +41,18 @@ export default function LoginPage() {
     setWaitingForWallet(true);
 
     try {
-      /* 1. Firebase auth */
       const { user } = await signInWithEmailAndPassword(auth, em, password);
 
-      /* 2. User doc exists? */
       const userSnap = await getDoc(doc(db, "users", user.uid));
       if (!userSnap.exists()) throw { code: "custom/no-user-doc" };
 
       const { hasCompletedOnboarding, wallet: registeredWallet } =
         userSnap.data();
       if (!hasCompletedOnboarding || !registeredWallet) {
-        navigate("/onboarding"); // short-circuit ok
+        navigate("/onboarding");
         return;
       }
 
-      /* 3. MetaMask checks */
       if (!window.ethereum) throw { code: "custom/no-mm" };
 
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -76,7 +71,6 @@ export default function LoginPage() {
       const { chainId } = await provider.getNetwork();
       if (chainId !== 11155111n) throw { code: "custom/wrong-network" };
 
-      /* 4. success */
       navigate("/game");
     } catch (err) {
       setIsVerifyingWallet(false);

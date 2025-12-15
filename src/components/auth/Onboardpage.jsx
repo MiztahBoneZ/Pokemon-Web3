@@ -31,24 +31,20 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const db = getFirestore();
 
-  // Check if user is logged in and hasn't completed onboarding
   useEffect(() => {
     const checkUser = async () => {
       const user = auth.currentUser;
 
       if (!user) {
-        // Not logged in - redirect to login
         alert("Please login first!");
         navigate("/");
         return;
       }
 
-      // Check if already completed onboarding
       const userRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userRef);
 
       if (userDoc.exists() && userDoc.data().hasCompletedOnboarding) {
-        // Already completed - redirect to game
         navigate("/game");
       }
     };
@@ -75,7 +71,6 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Make sure user is logged in
     if (!auth.currentUser) {
       alert("Please login first!");
       navigate("/");
@@ -89,10 +84,9 @@ export default function OnboardingPage() {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      // Ensure on Sepolia network
       const network = await provider.getNetwork();
       if (network.chainId !== 11155111n) {
-        alert("Please switch to Sepolia test network in MetaMask!");
+        alert("Wrong Chain! Connect to a TestNet.");
         setIsConnecting(false);
         return;
       }
@@ -103,7 +97,7 @@ export default function OnboardingPage() {
     } catch (err) {
       console.error(err);
       setIsConnecting(false);
-      alert("Failed to connect wallet. Make sure MetaMask is unlocked.");
+      alert("Failed to connect wallet.");
     }
   };
 
