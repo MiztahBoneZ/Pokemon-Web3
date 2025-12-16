@@ -7,13 +7,10 @@
   padding: 0;
 }
 
-/* ============================================
-   PAGE CONTAINER
-============================================ */
 .gamepage-container {
   height: 100vh;
   width: 100vw;
-  background: #0f380f; /* darkest green */
+  background: #0f380f;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,7 +19,9 @@
   color: #9bbc0f;
   font-family: "Press Start 2P", cursive;
   overflow: hidden;
-  border: 4px solid #306230;
+  border: 4px #ffcb05 ridge;
+  border-right-style: dashed;
+  border-left-style: dashed;
 }
 
 /* ============================================
@@ -30,8 +29,8 @@
 ============================================ */
 .user-card {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: 12px;
+  left: 12px;
   background: #306230;
   border: 3px solid #9bbc0f;
   padding: 8px 12px;
@@ -45,7 +44,7 @@
 }
 
 .signout-btn {
-  background: #da4848;
+  background: #da4848b4;
   color: #0f380f;
   border: 2px solid #9bbc0f;
   padding: 4px 8px;
@@ -69,14 +68,53 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: #ffcb05 10px ridge;
+  padding: 28px 64px 36px;
+  background: #1a2f1a;
+  box-shadow: 6px 6px 0 #0a1a0a;
 }
 
 .menu-title {
-  font-size: 18px;
+  position: relative;
+  font-size: 54px;
+  text-align: center;
   margin-bottom: 20px;
   color: #ffcb05;
-  text-shadow: 2px 2px 0 #306230;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+
+  text-shadow: 1px 1px 0 #306230, 2px 2px 0 #24501f, 0 0 4px #ffcb05;
+  user-select: none;
+
+  animation: title-flicker 2.5s steps(1) infinite,
+    title-float 3s steps(4) infinite, title-glitch 5.5s steps(1) infinite;
+  /*glitch-flash 5.5s steps(1) infinite;*/
+}
+
+.menu-title::before,
+.menu-title::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.menu-title::before {
+  color: #00ffff;
+  z-index: -1;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.menu-title::after {
+  color: #ff005d;
+  z-index: -2;
+  opacity: 0;
+  mix-blend-mode: screen;
 }
 
 .menu-buttons {
@@ -101,18 +139,11 @@
   box-shadow: 3px 3px 0 #1a2f1a;
 }
 
-.menu-buttons button:hover {
+.menu-buttons button:hover,
+.menu-buttons button:focus-visible {
   background: #f5b700;
-  transform: translate(2px, 2px);
-}
-
-/* ============================================
-   OPTIONAL IMPROVEMENTS
-   - Highlight currently hovered button
-   - Add subtle glow on title
-============================================ */
-.menu-title {
-  text-shadow: 2px 2px 0 #306230, 0 0 4px #ffcb05;
+  outline: 2px dashed #0f380f;
+  outline-offset: 2px;
 }
 
 .menu-buttons button:active {
@@ -138,4 +169,102 @@
   font-size: 8px;
   color: #ffcb05;
   margin: 2px 0 6px;
+}
+
+@keyframes title-flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+    text-shadow: 1px 1px 0 #306230, 2px 2px 0 #24501f, 0 0 4px #ffcb05;
+  }
+  94% {
+    opacity: 0.85;
+    text-shadow: 1px 1px 0 #306230, 0 0 2px #ffcb05;
+  }
+  96% {
+    opacity: 1;
+  }
+}
+
+@keyframes title-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes title-glitch {
+  0%,
+  90%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+
+  91% {
+    transform: translate(-4px, 2px) skewX(8deg);
+    filter: contrast(1.4);
+  }
+
+  92% {
+    transform: translate(6px, -2px) skewY(-6deg);
+  }
+
+  93% {
+    transform: translate(-6px, 0) scaleX(1.05);
+  }
+
+  94% {
+    transform: translate(3px, -1px);
+  }
+
+  95% {
+    transform: none;
+  }
+}
+
+@keyframes glitch-rgb {
+  0%,
+  88%,
+  100% {
+    opacity: 0;
+    clip-path: inset(0 0 0 0);
+  }
+
+  90% {
+    opacity: 0.9;
+    transform: translate(-6px, 0);
+    clip-path: inset(10% 0 60% 0);
+  }
+
+  92% {
+    opacity: 0.7;
+    transform: translate(6px, 0);
+    clip-path: inset(40% 0 20% 0);
+  }
+
+  94% {
+    opacity: 0.8;
+    transform: translate(-3px, 0);
+    clip-path: inset(70% 0 5% 0);
+  }
+}
+
+.menu-title::before,
+.menu-title::after {
+  animation: glitch-rgb 5.5s steps(1) infinite;
+}
+
+@keyframes glitch-flash {
+  0%,
+  95%,
+  100% {
+    filter: none;
+  }
+  92% {
+    filter: invert(1) contrast(2);
+  }
 }

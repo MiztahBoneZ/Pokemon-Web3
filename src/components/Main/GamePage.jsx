@@ -9,7 +9,6 @@ export default function GamePage() {
   const user = auth.currentUser;
   const [walletAddress, setWalletAddress] = useState("");
 
-  // Sound effects
   const [hoverSound] = useState(new Audio("/SFX/SFX_SWAP.wav"));
   const [clickSound] = useState(new Audio("/SFX/SFX_SWITCH.wav"));
 
@@ -90,7 +89,10 @@ export default function GamePage() {
           Sign Out
         </button>
       </div>
-      <h1 className="menu-title">Pokemon Dungeons</h1>
+      <h1 className="menu-title" data-text="Pokemon Dungeons">
+        Pokemon <br />
+        Dungeons
+      </h1>
       <div className="menu-container">
         <div className="menu-buttons">
           <button
