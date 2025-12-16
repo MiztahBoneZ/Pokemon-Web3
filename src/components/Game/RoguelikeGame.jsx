@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../../Core/firebase";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import Battle from "./Battle";
 import "./RoguelikeGame.css";
 
-export default function RoguelikeGame({ selectedTeam }) {
+export default function RoguelikeGame() {
+  const location = useLocation();
+  const selectedTeam = location.state?.selectedTeam || [];
   const [gameState, setGameState] = useState("start");
   const [currentFloor, setCurrentFloor] = useState(1);
   const [team, setTeam] = useState([]);
@@ -19,6 +21,12 @@ export default function RoguelikeGame({ selectedTeam }) {
   const navigate = useNavigate();
   const db = getFirestore();
 
+  useEffect(() => {
+    console.log("RoguelikeGame received selectedTeam:", selectedTeam);
+    console.log("First pokemon:", selectedTeam[0]);
+    console.log("First pokemon types:", selectedTeam[0]?.types);
+  }, []);
+
   const startRun = () => {
     const initializedTeam = selectedTeam.map((pokemon) => ({
       ...pokemon,
@@ -28,6 +36,10 @@ export default function RoguelikeGame({ selectedTeam }) {
       currentStats: { ...pokemon.stats },
       expGained: 0,
     }));
+
+    console.log("Initialized team:", initializedTeam);
+    console.log("First initialized pokemon:", initializedTeam[0]);
+    console.log("First initialized pokemon types:", initializedTeam[0]?.types);
 
     setTeam(initializedTeam);
     setCurrentFloor(1);
@@ -148,7 +160,7 @@ export default function RoguelikeGame({ selectedTeam }) {
   if (gameState === "battle") {
     return (
       <Battle
-        key={battleKey} // Force re-mount on floor change
+        key={battleKey}
         team={team}
         floor={currentFloor}
         onBattleEnd={handleBattleEnd}

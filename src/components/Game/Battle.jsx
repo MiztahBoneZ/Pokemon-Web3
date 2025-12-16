@@ -7,59 +7,49 @@ import "./Battle.css";
 
 const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
-// Biome data
 const BIOMES = {
   forest: {
     name: "🌲 Forest",
     types: ["grass", "bug", "normal"],
     color: "#78C850",
-    description: "Dense woodland filled with nature Pokémon",
   },
   ocean: {
     name: "🌊 Ocean",
     types: ["water"],
     color: "#6890F0",
-    description: "Vast waters home to aquatic creatures",
   },
   volcano: {
     name: "🔥 Volcano",
     types: ["fire", "rock", "ground"],
     color: "#F08030",
-    description: "Scorching landscape of molten danger",
   },
   powerPlant: {
     name: "⚡ Power Plant",
     types: ["electric", "steel"],
     color: "#F8D030",
-    description: "Abandoned facility crackling with energy",
   },
   hauntedTower: {
     name: "👻 Haunted Tower",
     types: ["ghost", "dark", "psychic"],
     color: "#705898",
-    description: "Eerie structure filled with spirits",
   },
   iceCave: {
     name: "❄️ Ice Cave",
     types: ["ice"],
     color: "#98D8D8",
-    description: "Frozen cavern of eternal winter",
   },
   mountain: {
     name: "⛰️ Mountain",
     types: ["fighting", "rock", "flying"],
     color: "#B8A038",
-    description: "Towering peaks of harsh training",
   },
   fairy: {
     name: "✨ Fairy Garden",
     types: ["fairy", "grass"],
     color: "#EE99AC",
-    description: "Mystical realm of enchantment",
   },
 };
 
-// Type effectiveness chart (simplified)
 const TYPE_CHART = {
   normal: { weak: ["fighting"], strong: [] },
   fire: {
@@ -114,7 +104,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const [wildPokemon, setWildPokemon] = useState(null);
   const [battleLog, setBattleLog] = useState([]);
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
-  const [battlePhase, setBattlePhase] = useState("intro"); // intro, battle, victory, defeat, capture
+  const [battlePhase, setBattlePhase] = useState("intro");
   const [selectedMove, setSelectedMove] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentBiome, setCurrentBiome] = useState(null);
@@ -123,7 +113,10 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const db = getFirestore();
 
   useEffect(() => {
-    // Initialize team on first mount only
+    console.log("Battle received team prop:", team);
+    console.log("First pokemon in battle:", team[0]);
+    console.log("First pokemon types:", team[0]?.types);
+
     if (playerTeam.length === 0) {
       const initializedTeam = team.map((pokemon) => ({
         ...pokemon,
@@ -178,7 +171,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const generateWildPokemon = async (floor, biome) => {
     try {
       const allPokemon = [];
-      for (let id = 1; id <= 151; id++) {
+      for (let id = 1; id <= 649; id++) {
         allPokemon.push(id);
       }
 
@@ -281,12 +274,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   };
 
   const calculateDamage = (attacker, defender, moveName) => {
-    const move = { name: moveName, power: 50 }; // Simplified
+    const move = { name: moveName, power: 50 };
     const level = attacker.level || attacker.sessionLevel || 1;
     const attack = attacker.currentStats?.attack || attacker.stats.attack;
     const defense = defender.currentStats?.defense || defender.stats.defense;
     const power = move.power;
-    const moveType = attacker.types[0]; // Simplified
+    const moveType = attacker.types[0];
     const typeMultiplier = getTypeEffectiveness(moveType, defender.types);
     const random = 0.85 + Math.random() * 0.15;
 
@@ -562,7 +555,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
         await setDoc(inventoryRef, {
           ...wildPokemon,
-          stats: wildPokemon.baseStats, // Save base stats
+          stats: wildPokemon.baseStats,
           nftTokenId: tokenId,
           nftTxHash: tx.hash,
           contractAddress: CONTRACT_ADDRESS,
@@ -633,7 +626,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   };
 
   const attemptRun = () => {
-    const runChance = 50; // 50% base chance
+    const runChance = 50;
     if (Math.random() * 100 < runChance) {
       addLog("Got away safely!");
       setTimeout(() => onBattleEnd(playerTeam, false), 1500);
@@ -683,7 +676,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       {/* Biome Header */}
       <div className="biome-header">
         <h2>{currentBiome.name}</h2>
-        <p>{currentBiome.description}</p>
         <span className="floor-indicator">Floor {floor}</span>
       </div>
 
@@ -769,6 +761,17 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
               <span className="hp-text">
                 {activePokemon.currentHP}/{activePokemon.maxHP}
               </span>
+              <div className="types">
+                {activePokemon.types?.map((type) => (
+                  <span
+                    key={type}
+                    className="type-badge"
+                    style={{ background: getTypeColor(type) }}
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>

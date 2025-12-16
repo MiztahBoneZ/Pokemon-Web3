@@ -37,6 +37,8 @@ export default function TeamSelect({
         );
 
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        console.log("Fetched inventory:", list);
+        console.log("First pokemon types:", list[0]?.types);
         list.sort((a, b) =>
           (b.createdAt || "").localeCompare(a.createdAt || "")
         );
@@ -94,6 +96,10 @@ export default function TeamSelect({
       showToast("Select at least 1 Pokémon!");
       return;
     }
+
+    console.log("Team being sent to roguelike:", team);
+    console.log("First pokemon in team:", team[0]);
+    console.log("First pokemon types:", team[0]?.types);
 
     try {
       const user = auth.currentUser;
