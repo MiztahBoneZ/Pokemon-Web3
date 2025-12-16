@@ -7,8 +7,7 @@
 This web application is a comprehensive technical demonstration of modern Web3 and blockchain concepts, applied through Pokémon turn-based gameplay.
 At its core, the application allows users to mint, own, and trade Pokémon as Non-Fungible Tokens (NFTs). Each Pokémon exists as a unique on-chain asset, verifiably owned by the user’s connected wallet.
 
-> This system is developed strictly as a proof of concept and is not intended for commercial deployment. If adapted for commercial use, all NFT metadata, tokenized assets, artwork, names, and associated intellectual property must be replaced with original or properly licensed content. <br/><br/>
-> _The developer assumes no liability for any legal, intellectual property, or regulatory issues arising from the minting, trading, or use of NFTs within this project._
+> This system is developed strictly as a proof of concept and is not intended for commercial deployment. If adapted for commercial use, all NFT metadata, tokenized assets, artwork, names, and associated intellectual property must be replaced with original or properly licensed content. <br/><br/> > _The developer assumes no liability for any legal, intellectual property, or regulatory issues arising from the minting, trading, or use of NFTs within this project._
 
 ---
 
@@ -21,6 +20,9 @@ At its core, the application allows users to mint, own, and trade Pokémon as No
 - [x] Play-to-Earn (P2E) Mechanics
 - [x] Decentralized Marketplace for Trading Pokémon and Items
 - [ ] Leaderboards and Achievements Linked to Blockchain
+
+> [!NOTE]
+> As advised, other gameplay's besides round-robin gameplay are allowed.
 
 ## Features
 
@@ -51,5 +53,3 @@ This project demonstrates:
 - Practical implementation of ERC-721 smart contracts
 - Secure wallet-based authentication and ownership validation using MetaMask
 - Integration of blockchain assets with a modern web stack
-
-## Tech Stack

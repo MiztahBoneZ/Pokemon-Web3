@@ -81,7 +81,6 @@ export default function RegisterPage() {
             disabled={loading}
           />
 
-          {/* ---------- CONFIRM PASSWORD INPUT ---------- */}
           <input
             type="password"
             placeholder="Confirm password"
