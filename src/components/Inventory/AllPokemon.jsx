@@ -83,7 +83,6 @@ export default function AllPokemon({ back }) {
   };
 
   const handleListingChange = () => {
-    // Reload pokemon and their listing statuses
     loadPokemon();
   };
 
@@ -175,7 +174,9 @@ export default function AllPokemon({ back }) {
               );
             })
           ) : (
-            <p className="empty-box">How did you get here without a Pokémon?</p>
+            <p className="empty-box">
+              You currently have no Pokemon, mint or purchase a Pokemon first.
+            </p>
           )}
         </div>
       </div>

@@ -117,7 +117,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     console.log("First pokemon in battle:", team[0]);
     console.log("First pokemon types:", team[0]?.types);
 
-    if (playerTeam.length === 0) {
+    if (playerTeam.length === 0 && team.length > 0) {
       const initializedTeam = team.map((pokemon) => ({
         ...pokemon,
         sessionLevel: pokemon.sessionLevel || 1,
@@ -127,10 +127,10 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         expGained: pokemon.expGained || 0,
       }));
       setPlayerTeam(initializedTeam);
+    } else if (playerTeam.length > 0) {
+      initializeBattle();
     }
-
-    initializeBattle();
-  }, [floor]);
+  }, [floor, team.length, playerTeam.length]);
 
   const initializeBattle = async () => {
     setBattlePhase("intro");
@@ -407,7 +407,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     setBattlePhase("victory");
     addLog(`Wild ${wildPokemon.name.toUpperCase()} fainted!`);
 
-    const expGained = Math.floor(wildPokemon.level * 50);
+    const expGained = Math.floor(wildPokemon.level * 100);
     addLog(`Gained ${expGained} EXP!`);
 
     const updatedTeam = [...playerTeam];

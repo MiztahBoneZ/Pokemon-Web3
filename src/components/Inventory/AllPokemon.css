@@ -117,24 +117,26 @@
   font-size: 8px;
   color: #ffcb05;
 }
-
 .badges-container {
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 6px;
+  left: 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  z-index: 3;
 }
 
 .nft-badge,
 .listed-badge {
-  font-size: 6px;
-  padding: 1px 3px;
+  font-size: 8px;
+  line-height: 1.2;
+  padding: 2px 5px;
   background: #ffcb05;
   color: #0f380f;
   border: 1px solid #306230;
   text-shadow: 1px 1px 0 #1a2f1a;
+  white-space: nowrap;
 }
 
 .poke-loading {

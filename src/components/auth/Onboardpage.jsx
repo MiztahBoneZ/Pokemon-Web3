@@ -541,8 +541,8 @@ export default function OnboardingPage() {
 
               <h2>Hatch Your Starter NFT</h2>
               <p className="step-description">
-                Click the egg to hatch your random starter Pokémon! It will be
-                minted as an NFT on the blockchain.
+                Click the egg to hatch your random starter Pokémon! Onboarding
+                is limited to only Generation 1 Pokemons.
               </p>
               <p className="network-warning">
                 Requires testnet ETH for gas. Get free ETH from faucets if

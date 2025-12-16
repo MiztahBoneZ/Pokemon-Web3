@@ -10,7 +10,6 @@ export default function GamePage() {
 
   const [walletAddress, setWalletAddress] = useState("");
 
-  /* ---------- MetaMask helpers ---------- */
   const getAccount = async () => {
     if (!window.ethereum) {
       console.warn("MetaMask not installed");
@@ -29,7 +28,7 @@ export default function GamePage() {
   };
 
   useEffect(() => {
-    getAccount(); // on mount
+    getAccount();
 
     window.ethereum?.on("accountsChanged", (accounts) => {
       setWalletAddress(accounts[0] || "");
@@ -40,7 +39,6 @@ export default function GamePage() {
     };
   }, []);
 
-  /* ---------- Sign-out ---------- */
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -50,7 +48,6 @@ export default function GamePage() {
     }
   };
 
-  /* ---------- UI ---------- */
   return (
     <div className="gamepage-container">
       <div className="user-card">
@@ -65,22 +62,21 @@ export default function GamePage() {
         </button>
       </div>
 
-      <h1 className="menu-title">Pokemon</h1>
+      <h1 className="menu-title">Pokemon Dungeons</h1>
       <div className="menu-container">
         <div className="menu-buttons">
-          <button>Start</button>
           <button onClick={() => navigate("/game/teamselect")}>
-            Current Team
+            Start Adventure
           </button>
           <button onClick={() => navigate("/game/pokemon")}>Pokémons</button>
-          <button onClick={() => navigate("/game/mint")}>
-            Minting <br /> <br />
-            TESTING ONLY
-          </button>
+          <button onClick={() => alert("Coming Soon")}>Trade</button>
           <button onClick={() => navigate("/game/marketplace")}>
             Marketplace
           </button>
-          <button onClick={() => alert("Coming Soon")}>Trade</button>
+          <button onClick={() => navigate("/game/mint")}>
+            Minting <br /> <br />
+            <h3>(TESTING ONLY)</h3>
+          </button>
         </div>
       </div>
     </div>
