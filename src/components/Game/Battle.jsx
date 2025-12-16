@@ -123,27 +123,49 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const db = getFirestore();
 
   useEffect(() => {
+    // Initialize team on first mount only
+    if (playerTeam.length === 0) {
+      const initializedTeam = team.map((pokemon) => ({
+        ...pokemon,
+        sessionLevel: pokemon.sessionLevel || 1,
+        currentHP: pokemon.currentHP || pokemon.stats.hp,
+        maxHP: pokemon.maxHP || pokemon.stats.hp,
+        currentStats: pokemon.currentStats || { ...pokemon.stats },
+        expGained: pokemon.expGained || 0,
+      }));
+      setPlayerTeam(initializedTeam);
+    }
+
     initializeBattle();
-  }, []);
+  }, [floor]);
 
   const initializeBattle = async () => {
-    // Initialize player team with session levels
-    const initializedTeam = team.map((pokemon) => ({
-      ...pokemon,
-      sessionLevel: 1,
-      currentHP: pokemon.stats.hp,
-      maxHP: pokemon.stats.hp,
-      currentStats: { ...pokemon.stats },
-      expGained: 0,
-    }));
-    setPlayerTeam(initializedTeam);
+    setBattlePhase("intro");
+    setBattleLog([]);
+    setIsPlayerTurn(true);
+    setIsAnimating(false);
+    setSelectedMove(null);
 
-    // Pick random biome
+    if (playerTeam.length > 0) {
+      const healedTeam = playerTeam.map((pokemon) => ({
+        ...pokemon,
+        currentHP: Math.min(
+          pokemon.currentHP + Math.floor(pokemon.maxHP * 0.2),
+          pokemon.maxHP
+        ),
+      }));
+      setPlayerTeam(healedTeam);
+
+      const firstAlive = healedTeam.findIndex((p) => p.currentHP > 0);
+      if (firstAlive !== -1) {
+        setActivePlayerIndex(firstAlive);
+      }
+    }
+
     const biomeKeys = Object.keys(BIOMES);
     const randomBiome = biomeKeys[Math.floor(Math.random() * biomeKeys.length)];
     setCurrentBiome(BIOMES[randomBiome]);
 
-    // Generate wild Pokémon
     const wild = await generateWildPokemon(floor, BIOMES[randomBiome]);
     setWildPokemon(wild);
 
@@ -155,17 +177,14 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
   const generateWildPokemon = async (floor, biome) => {
     try {
-      // Get Pokémon of matching type from biome
       const allPokemon = [];
       for (let id = 1; id <= 151; id++) {
         allPokemon.push(id);
       }
 
-      // Random Pokémon (simplified - in production, filter by type)
       const randomId =
         allPokemon[Math.floor(Math.random() * allPokemon.length)];
 
-      // Increased shiny chance in special biomes
       const shinyChance = biome.name.includes("✨") ? 0.05 : 0.02;
       const isShiny = Math.random() < shinyChance;
 
@@ -188,7 +207,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         return acc;
       }, {});
 
-      // Randomize stats
       const randomizedStats = {};
       for (const statName in baseStats) {
         const base = baseStats[statName];
@@ -201,14 +219,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         .sort(() => 0.5 - Math.random())
         .slice(0, 4);
 
-      // Calculate rarity
       const total = Object.values(randomizedStats).reduce(
         (sum, val) => sum + val,
         0
       );
       const rarity = getRarity(total);
 
-      // Scale to floor (wild Pokémon level = floor)
       const level = Math.max(1, floor);
       const scaledStats = {};
       for (const statName in randomizedStats) {
@@ -225,8 +241,8 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         nickname: "",
         sprite,
         types,
-        baseStats: randomizedStats, // For minting
-        stats: scaledStats, // For battle
+        baseStats: randomizedStats,
+        stats: scaledStats,
         moves: selectedMoves,
         rarity: rarity.tier,
         isShiny,
@@ -376,7 +392,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const handlePlayerFaint = () => {
     addLog(`${playerTeam[activePlayerIndex].name.toUpperCase()} fainted!`);
 
-    // Check for next available Pokémon
     const nextIndex = playerTeam.findIndex(
       (p, idx) => idx > activePlayerIndex && p.currentHP > 0
     );
@@ -388,7 +403,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         setIsPlayerTurn(true);
       }, 2000);
     } else {
-      // All Pokémon fainted
       setTimeout(() => {
         setBattlePhase("defeat");
         addLog("All your Pokémon fainted!");
@@ -400,15 +414,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     setBattlePhase("victory");
     addLog(`Wild ${wildPokemon.name.toUpperCase()} fainted!`);
 
-    // Calculate EXP
     const expGained = Math.floor(wildPokemon.level * 50);
     addLog(`Gained ${expGained} EXP!`);
 
-    // Update team EXP
     const updatedTeam = [...playerTeam];
     updatedTeam[activePlayerIndex].expGained += expGained;
 
-    // Check level up
     const newLevel = calculateLevel(updatedTeam[activePlayerIndex].expGained);
     if (newLevel > updatedTeam[activePlayerIndex].sessionLevel) {
       updatedTeam[activePlayerIndex].sessionLevel = newLevel;
@@ -418,7 +429,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         ].name.toUpperCase()} grew to level ${newLevel}!`
       );
 
-      // Scale stats
       updatedTeam[activePlayerIndex].currentStats = scaleStats(
         updatedTeam[activePlayerIndex].stats,
         newLevel
@@ -430,7 +440,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
     setPlayerTeam(updatedTeam);
 
-    // Calculate capture chance
     const chance = calculateCaptureChance();
     setCaptureChance(chance);
   };
@@ -448,14 +457,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   };
 
   const calculateCaptureChance = () => {
-    let chance = 30; // Base 30%
+    let chance = 30;
 
-    // Low HP bonus
     const hpPercent = (wildPokemon.currentHP / wildPokemon.maxHP) * 100;
     if (hpPercent < 25) chance += 20;
     else if (hpPercent < 50) chance += 10;
 
-    // Rarity penalty
     const rarityPenalty = {
       Common: 0,
       Uncommon: -10,
@@ -465,7 +472,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     };
     chance += rarityPenalty[wildPokemon.rarity] || 0;
 
-    return Math.max(5, Math.min(95, chance)); // Between 5% and 95%
+    return Math.max(5, Math.min(95, chance));
   };
 
   const attemptCapture = async () => {
@@ -474,7 +481,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
     setIsAnimating(true);
 
-    // Simulate pokéball animation
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const success = Math.random() * 100 < captureChance;
@@ -483,12 +489,14 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       addLog(`Gotcha! ${wildPokemon.name.toUpperCase()} was caught!`);
       setIsAnimating(false);
 
-      // Offer to mint
       setTimeout(() => {
-        if (window.confirm(`Mint ${wildPokemon.name.toUpperCase()}?`)) {
+        if (
+          window.confirm(
+            `Mint ${wildPokemon.name.toUpperCase()} as NFT? (Costs gas)`
+          )
+        ) {
           mintCapturedPokemon();
         } else {
-          // Skip minting, end battle
           onBattleEnd(playerTeam, true);
         }
       }, 1000);
@@ -513,10 +521,8 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         signer
       );
 
-      // Create metadata
       const tokenURI = createMetadataURI(wildPokemon);
 
-      // Mint
       const tx = await contract.mintPokemon(
         walletAddress,
         tokenURI,
@@ -530,7 +536,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       addLog("Waiting for confirmation...");
       const receipt = await tx.wait();
 
-      // Extract token ID
       let tokenId = null;
       for (const log of receipt.logs) {
         try {
@@ -544,7 +549,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         }
       }
 
-      // Save to Firebase
       const user = auth.currentUser;
       if (user) {
         const pokemonFirebaseId = crypto.randomUUID();
@@ -796,7 +800,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
             </div>
             <div className="other-actions">
               <button className="action-btn" onClick={attemptRun}>
-                🏃 Run
+                Run
               </button>
             </div>
           </>
@@ -806,7 +810,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
           <div className="victory-actions">
             <h3>Victory!</h3>
             <button className="capture-btn" onClick={attemptCapture}>
-              🎯 Attempt Capture ({captureChance}% chance)
+              Attempt Capture ({captureChance}% chance)
             </button>
             <button
               className="continue-btn"

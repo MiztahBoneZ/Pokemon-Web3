@@ -6,9 +6,10 @@ import Battle from "./Battle";
 import "./RoguelikeGame.css";
 
 export default function RoguelikeGame({ selectedTeam }) {
-  const [gameState, setGameState] = useState("start"); // start, battle, gameOver
+  const [gameState, setGameState] = useState("start");
   const [currentFloor, setCurrentFloor] = useState(1);
   const [team, setTeam] = useState([]);
+  const [battleKey, setBattleKey] = useState(0);
   const [runStats, setRunStats] = useState({
     battlesWon: 0,
     pokemonCaptured: 0,
@@ -19,7 +20,6 @@ export default function RoguelikeGame({ selectedTeam }) {
   const db = getFirestore();
 
   const startRun = () => {
-    // Initialize team with session data
     const initializedTeam = selectedTeam.map((pokemon) => ({
       ...pokemon,
       sessionLevel: 1,
@@ -44,29 +44,26 @@ export default function RoguelikeGame({ selectedTeam }) {
     setTeam(updatedTeam);
 
     if (victory) {
-      // Update stats
       setRunStats((prev) => ({
         ...prev,
         battlesWon: prev.battlesWon + 1,
         floorsCleared: currentFloor,
       }));
 
-      // Check if all Pokémon fainted
       const allFainted = updatedTeam.every((p) => p.currentHP <= 0);
       if (allFainted) {
         endRun(false);
         return;
       }
 
-      // Continue to next floor
       setCurrentFloor((prev) => prev + 1);
 
-      // Small delay before next battle
+      setBattleKey((prev) => prev + 1);
+
       setTimeout(() => {
         setGameState("battle");
-      }, 1000);
+      }, 500);
     } else {
-      // Defeat or run - end game
       endRun(false);
     }
   };
@@ -81,7 +78,6 @@ export default function RoguelikeGame({ selectedTeam }) {
   const endRun = async (victory) => {
     setGameState("gameOver");
 
-    // Save run to Firebase
     try {
       const user = auth.currentUser;
       if (user) {
@@ -112,7 +108,7 @@ export default function RoguelikeGame({ selectedTeam }) {
     return (
       <div className="game-start-container">
         <div className="start-card">
-          <h1>🎮 Roguelike Adventure</h1>
+          <h1>Adventure Mode</h1>
           <p className="subtitle">Battle through floors and capture Pokémon!</p>
 
           <div className="team-preview">
@@ -130,11 +126,11 @@ export default function RoguelikeGame({ selectedTeam }) {
           <div className="rules-section">
             <h4>How to Play:</h4>
             <ul>
-              <li>⚔️ Battle wild Pokémon in random biomes</li>
-              <li>🎯 Capture defeated Pokémon to mint as NFTs</li>
-              <li>📈 Level up during run (resets after)</li>
-              <li>🏆 Survive as long as possible</li>
-              <li>💀 All Pokémon faint = Game Over</li>
+              <li>Battle wild Pokémon in random biomes</li>
+              <li>Capture defeated Pokémon to mint as NFTs</li>
+              <li>Level up during run (resets after)</li>
+              <li>Survive as long as possible</li>
+              <li>All Pokémon faint = Game Over</li>
             </ul>
           </div>
 
@@ -152,6 +148,7 @@ export default function RoguelikeGame({ selectedTeam }) {
   if (gameState === "battle") {
     return (
       <Battle
+        key={battleKey} // Force re-mount on floor change
         team={team}
         floor={currentFloor}
         onBattleEnd={handleBattleEnd}
@@ -211,10 +208,10 @@ export default function RoguelikeGame({ selectedTeam }) {
 
           <div className="game-over-actions">
             <button className="play-again-btn" onClick={startRun}>
-              🔄 Play Again
+              Play Again
             </button>
             <button className="menu-btn" onClick={() => navigate("/game")}>
-              📋 Main Menu
+              Main Menu
             </button>
           </div>
         </div>
