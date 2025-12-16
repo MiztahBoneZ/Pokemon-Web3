@@ -18,7 +18,7 @@ At its core, the application allows users to mint, own, and trade Pokémon as No
 
 - [x] Non-Fungible Tokens (NFTs) for Pokémon
 - [ ] Bitcoin as In-Game Currency
-- [ ] Play-to-Earn (P2E) Mechanics
+- [x] Play-to-Earn (P2E) Mechanics
 - [x] Decentralized Marketplace for Trading Pokémon and Items
 - [ ] Leaderboards and Achievements Linked to Blockchain
 
