@@ -1,8 +1,8 @@
-# Blockchain Technology Demonstration
+# Pokemon Dungeons
 
 > _In fulfillment of Bootcamp requirements as the third and final project._
 
-#### NFT Integrated Pokémons
+#### Blockchain Integrated Pokémons
 
 This web application is a comprehensive technical demonstration of modern Web3 and blockchain concepts, applied through Pokémon turn-based gameplay.
 At its core, the application allows users to mint, own, and trade Pokémon as Non-Fungible Tokens (NFTs). Each Pokémon exists as a unique on-chain asset, verifiably owned by the user’s connected wallet.
