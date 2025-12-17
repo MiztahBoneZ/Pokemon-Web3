@@ -25,7 +25,7 @@ This web application serves as a technical proof of concept demonstrating modern
 - [ ] Leaderboards and Achievements Linked to Blockchain
 
 > [!NOTE]
-> As advised, gameplay modes other than round-robin gameplay.
+> As advised, gameplay modes other than round-robin gameplay are allowed.
 
 ## Features
 
