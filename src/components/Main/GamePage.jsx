@@ -89,9 +89,10 @@ export default function GamePage() {
           Sign Out
         </button>
       </div>
-      <h1 className="menu-title" data-text="Pokemon Dungeons">
-        Pokemon <br />
-        Dungeons
+      <h1 className="menu-title" data-text="X13123 X24Y">
+        Pokemon
+        <br />
+        <h6>Dungeons</h6>
       </h1>
       <div className="menu-container">
         <div className="menu-buttons">

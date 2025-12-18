@@ -134,9 +134,19 @@ export default function AllPokemon({ back }) {
     clickSound.play().catch((e) => console.log("Audio play failed:", e));
   };
 
+  const playOpenPokemonSound = () => {
+    clickPokemon.currentTime = 0;
+    clickPokemon.play().catch((e) => console.log("Audio play failed: ", e));
+  };
+
   const handleBackNav = () => {
     playClickSound();
     navigate(-1);
+  };
+
+  const openPokemonInfo = (m) => {
+    playOpenPokemonSound();
+    setSelectedMon(m);
   };
 
   return (
@@ -168,7 +178,7 @@ export default function AllPokemon({ back }) {
                   }`}
                   style={{ borderColor: getTypeColor(types[0]) }}
                   onMouseEnter={playHoverSound}
-                  onClick={() => setSelectedMon(m)}
+                  onClick={() => openPokemonInfo(m)}
                 >
                   {/* Badges Container */}
                   <div className="badges-container">

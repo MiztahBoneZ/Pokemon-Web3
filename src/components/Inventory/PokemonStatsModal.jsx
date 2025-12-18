@@ -11,6 +11,7 @@ export default function PokemonStatsModal({ mon, close, onListingChange }) {
   const [listPrice, setListPrice] = useState("");
   const [processing, setProcessing] = useState(false);
   const [listingInfo, setListingInfo] = useState(null);
+  const [closeModalSound] = useState(new Audio("/SFX/SFX_TURN_OFF_PC.wav"));
 
   if (!mon) return null;
 
@@ -35,8 +36,8 @@ export default function PokemonStatsModal({ mon, close, onListingChange }) {
     fairy: "#EE99AC",
   };
 
-  // Check if NFT is listed on mount
   React.useEffect(() => {
+    closeModalSound.volume = 0.8;
     if (mon.onChain && mon.nftTokenId) {
       checkListing();
     }
@@ -227,10 +228,20 @@ export default function PokemonStatsModal({ mon, close, onListingChange }) {
     }
   };
 
+  const ClosePokemonSound = () => {
+    closeModalSound.currentTime = 0;
+    closeModalSound.play().catch((e) => console.log("Audio play failed: ", e));
+  };
+
+  const closeOverlay = () => {
+    ClosePokemonSound();
+    close();
+  };
+
   return (
-    <div className="stats-overlay" onClick={close}>
+    <div className="stats-overlay" onClick={() => closeOverlay()}>
       <div className="stats-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={close}>
+        <button className="close-btn" onClick={() => closeOverlay()}>
           X
         </button>
 
