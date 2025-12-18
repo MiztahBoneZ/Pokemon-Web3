@@ -5,25 +5,22 @@
   image-rendering: pixelated;
 }
 
-/* ============================================
-   OVERLAY
-============================================ */
 .stats-overlay {
   position: fixed;
   inset: 0;
   background: rgba(15, 56, 15, 0.85);
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* top-align for better use of space */
+  align-items: flex-start;
   padding: 20px;
   z-index: 1000;
-  overflow-y: auto; /* allow scrolling if viewport is short */
+  overflow-y: auto;
 }
 
 .stats-box {
-  width: 80vw; /* 80% of viewport width */
-  max-width: 1200px; /* optional max width */
-  min-width: 600px; /* optional min width for readability */
+  width: 80vw;
+  max-width: 1200px;
+  min-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
   background: #306230;
@@ -38,9 +35,6 @@
   align-items: center;
 }
 
-/* ============================================
-   CLOSE BUTTON
-============================================ */
 .close-btn {
   background: #da4848;
   color: #0f380f;
@@ -58,9 +52,6 @@
   transform: translate(1px, 1px);
 }
 
-/* ============================================
-   TITLE + IMAGE
-============================================ */
 .stats-title {
   font-size: 18px;
   color: #ffcb05;
@@ -78,9 +69,6 @@
   box-shadow: 4px 4px 0 #1a2f1a;
 }
 
-/* ============================================
-   TYPE TAGS
-============================================ */
 .stats-types {
   margin: 14px 0;
   display: flex;
@@ -97,20 +85,16 @@
   box-shadow: 3px 3px 0 #1a2f1a;
 }
 
-/* ============================================
-   SECTION WRAPPER
-============================================ */
 .stats-section {
   margin-top: 18px;
   padding: 12px;
-  background: #0f380f; /* dark green background */
-  border: 3px solid #9bbc0f; /* light green pixel border */
+  background: #0f380f;
+  border: 3px solid #9bbc0f;
   box-shadow: 4px 4px 0 #1a2f1a;
   text-align: left;
-  width: 100%; /* ensure it fills modal width */
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
 }
 
 .stats-section h3 {
@@ -119,9 +103,6 @@
   margin-bottom: 12px;
 }
 
-/* ============================================
-   NFT INFO
-============================================ */
 .nft-info-row {
   font-size: 10px;
   margin-bottom: 8px;
@@ -137,7 +118,6 @@
   color: #ffcb05;
 }
 
-/* Buttons */
 .list-for-sale-btn,
 .cancel-listing-btn,
 .explorer-btn {
@@ -161,9 +141,6 @@
   transform: translate(1px, 1px);
 }
 
-/* ============================================
-   BASE STATS LIST
-============================================ */
 .stats-list {
   font-size: 10px;
 }
@@ -174,12 +151,10 @@
   padding: 4px 0;
 }
 
-/* ============================================
-   MOVES GRID
-============================================ */
 .moves-grid {
   width: 100%;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  max-width: 100% !important;
 }
 
 .move-card {
@@ -195,9 +170,6 @@
   background: #2d582d !important;
 }
 
-/* ============================================
-   MOVE DETAILS POPUP
-============================================ */
 .move-details-overlay {
   position: fixed;
   top: 0;
@@ -221,9 +193,6 @@
   position: relative;
 }
 
-/* ============================================
-   LISTING MODAL
-============================================ */
 .listing-modal-overlay {
   position: fixed;
   top: 0;
@@ -313,9 +282,8 @@
   transform: translate(1px, 1px);
 }
 
-/* === THIN YELLOW SCROLLBAR === */
 .stats-box::-webkit-scrollbar {
-  width: 6px; /* thinner */
+  width: 6px;
 }
 
 .stats-box::-webkit-scrollbar-track {
@@ -323,7 +291,7 @@
 }
 
 .stats-box::-webkit-scrollbar-thumb {
-  background: #ffcb05; /* Pokémon yellow */
+  background: #ffcb05;
   border: 1px solid #c7a008;
 }
 
@@ -331,13 +299,11 @@
   background: #f5b700;
 }
 
-/* Firefox scrollbar */
 .stats-box {
   scrollbar-width: thin;
   scrollbar-color: #ffcb05 #0f380f;
 }
 
-/* === MOVE DETAILS POPUP SCROLLBAR === */
 .move-details-box {
   max-height: 70vh;
   overflow-y: auto;
@@ -354,7 +320,6 @@
   border: 1px solid #c7a008;
 }
 
-/* === LISTING MODAL SCROLLER === */
 .listing-modal-content {
   max-height: 80vh;
   overflow-y: auto;

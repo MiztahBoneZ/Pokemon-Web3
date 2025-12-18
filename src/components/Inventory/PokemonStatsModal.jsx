@@ -241,10 +241,6 @@ export default function PokemonStatsModal({ mon, close, onListingChange }) {
   return (
     <div className="stats-overlay" onClick={() => closeOverlay()}>
       <div className="stats-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={() => closeOverlay()}>
-          X
-        </button>
-
         <h2 className="stats-title">{formatName()}</h2>
         <img src={mon.sprite} alt={mon.name} className="stats-img" />
 

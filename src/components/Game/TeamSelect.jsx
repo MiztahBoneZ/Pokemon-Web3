@@ -13,14 +13,14 @@ import "./TeamSelect.css";
 export default function TeamSelect({
   onConfirm = () => {},
   onCancel = () => {},
-  onBack = () => {
-    () => navigate(-1);
-  },
 }) {
   const [monList, setMonList] = useState([]);
   const [team, setTeam] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
   const navigate = useNavigate();
+  const onBack = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     /*  
@@ -185,7 +185,7 @@ export default function TeamSelect({
         <button className="team-btn confirm" onClick={handleStartAdventure}>
           🎮 Start Adventure
         </button>
-        <button className="team-btn cancel" onClick={onBack}>
+        <button className="team-btn cancel" onClick={() => onBack()}>
           Cancel
         </button>
       </div>

@@ -17,7 +17,7 @@ export default function AllPokemon({ back }) {
   const [listingStatuses, setListingStatuses] = useState({});
   const [hoverSound] = useState(new Audio("/SFX/SFX_SWAP.wav"));
   const [clickSound] = useState(new Audio("/SFX/SFX_SWITCH.wav"));
-  const [clickPokemon] = useState(new Audio("/SFX/SFX_START_MENU.wav"));
+  const [clickPokemon] = useState(new Audio("/SFX/SFX_TURN_ON_PC.wav"));
 
   useEffect(() => {
     loadPokemon();

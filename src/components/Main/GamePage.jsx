@@ -10,7 +10,7 @@ export default function GamePage() {
   const [walletAddress, setWalletAddress] = useState("");
 
   const [hoverSound] = useState(new Audio("/SFX/SFX_SWAP.wav"));
-  const [clickSound] = useState(new Audio("/SFX/SFX_SWITCH.wav"));
+  const [clickSound] = useState(new Audio("/SFX/SFX_PRESS_AB.wav"));
 
   const getAccount = async () => {
     if (!window.ethereum) {
@@ -89,7 +89,7 @@ export default function GamePage() {
           Sign Out
         </button>
       </div>
-      <h1 className="menu-title" data-text="X13123 X24Y">
+      <h1 className="menu-title" data-text="POKEMON PANCHO">
         Pokemon
         <br />
         <h6>Dungeons</h6>

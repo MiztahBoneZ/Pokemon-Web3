@@ -475,7 +475,7 @@ export default function OnboardingPage() {
       )}
 
       <div className="onboarding-container">
-        <h1 className="main-title">🎮 Trainer Onboarding</h1>
+        <h1 className="main-title">Trainer Onboarding</h1>
 
         <div className="progress-steps">
           <div
@@ -589,19 +589,6 @@ export default function OnboardingPage() {
                 )}
                 Congratulations!
               </h2>
-              {nftTokenId && (
-                <div className="nft-badge">
-                  🎫 NFT Token ID: #{nftTokenId}
-                  <a
-                    href={`https://testnets.opensea.io/assets/sepolia/${CONTRACT_ADDRESS}/${nftTokenId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ marginLeft: "10px", fontSize: "12px" }}
-                  >
-                    View on OpenSea ↗
-                  </a>
-                </div>
-              )}
               <div
                 className="pokemon-card"
                 style={{

@@ -1,10 +1,5 @@
-/* ============================================
-   ONBOARDING STYLES
-   Pokémon-style pixel UI for trainer onboarding
-============================================ */
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
-/* ---------- 1. GLOBAL RESET / THEME ---------- */
 * {
   box-sizing: border-box;
   image-rendering: pixelated;
@@ -39,7 +34,7 @@ body {
 
 /* ---------- 2. WRAPPER / LAYOUT ---------- */
 .onboarding-wrapper {
-  min-height: 100vh;
+  min-height: 80vh;
   width: 100vw;
   display: flex;
   align-items: center;
@@ -51,7 +46,6 @@ body {
 
 .onboarding-container {
   width: 100%;
-  max-width: 800px;
   background: var(--bg-mid);
   border: 3px solid var(--bg-light);
   box-shadow: 6px 6px 0 var(--black);
@@ -81,7 +75,6 @@ body {
   color: var(--accent-red);
 }
 
-/* ---------- 4. PROGRESS STEPS ---------- */
 .progress-steps {
   display: flex;
   align-items: center;
@@ -138,6 +131,7 @@ body {
   background: var(--accent-yellow);
   color: var(--text-dark);
   padding: 10px 16px;
+  margin-top: 30px;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--black);
   transition: none;
@@ -373,7 +367,6 @@ body {
 
 /* ---------- 10. POKÉMON REVEAL ---------- */
 .pokemon-reveal-section {
-  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
@@ -397,8 +390,6 @@ body {
 }
 
 .pokemon-card {
-  width: 100%;
-  max-width: 420px;
   background: var(--bg-dark);
   border: 3px solid;
   padding: 16px;

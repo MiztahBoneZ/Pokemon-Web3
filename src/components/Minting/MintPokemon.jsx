@@ -373,7 +373,7 @@ export default function MintPokemon() {
           <button className="back-btn" onClick={() => navigate(-1)}>
             ← Back
           </button>
-          <h1 className="mint-title">🥚 Hatch New Pokémon</h1>
+          <h1 className="mint-title">Hatch New Pokémon</h1>
           {mintCount > 0 && (
             <div className="mint-counter">Minted this session: {mintCount}</div>
           )}
@@ -553,14 +553,11 @@ export default function MintPokemon() {
               </div>
 
               <div className="action-buttons">
-                <button className="mint-another-btn" onClick={mintAnother}>
-                  Hatch Another Pokémon
-                </button>
                 <button
                   className="view-collection-btn"
-                  onClick={() => navigate("/all-pokemon")}
+                  onClick={() => navigate(-1)}
                 >
-                  View My Collection
+                  Go Back
                 </button>
               </div>
             </div>
