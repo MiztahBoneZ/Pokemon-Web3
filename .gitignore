@@ -26,6 +26,4 @@ dist-ssr
 # Firebase config
 #src/Core/firebase.js
 .env
-PokeNFT.sol
-MyNotes.docx
-Project_Artifacts/
+Project_Artifacts/MyNotes

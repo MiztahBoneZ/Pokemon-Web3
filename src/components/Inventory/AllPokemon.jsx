@@ -15,9 +15,16 @@ export default function AllPokemon({ back }) {
   const [loading, setLoading] = useState(true);
   const [selectedMon, setSelectedMon] = useState(null);
   const [listingStatuses, setListingStatuses] = useState({});
+  const [hoverSound] = useState(new Audio("/SFX/SFX_SWAP.wav"));
+  const [clickSound] = useState(new Audio("/SFX/SFX_SWITCH.wav"));
+  const [clickPokemon] = useState(new Audio("/SFX/SFX_START_MENU.wav"));
 
   useEffect(() => {
     loadPokemon();
+
+    hoverSound.volume = 0.1;
+    clickSound.volume = 0.4;
+    clickPokemon.volume = 0.8;
   }, []);
 
   const loadPokemon = async () => {
@@ -117,10 +124,29 @@ export default function AllPokemon({ back }) {
 
   if (loading) return <div className="poke-loading">LOADING…</div>;
 
+  const playHoverSound = () => {
+    hoverSound.currentTime = 0;
+    hoverSound.play().catch((e) => console.log("Audio play failed:", e));
+  };
+
+  const playClickSound = () => {
+    clickSound.currentTime = 0;
+    clickSound.play().catch((e) => console.log("Audio play failed:", e));
+  };
+
+  const handleBackNav = () => {
+    playClickSound();
+    navigate(-1);
+  };
+
   return (
     <div className="all-poke-page">
       <div className="top-header">
-        <button className="top-back-btn" onClick={() => navigate(-1)}>
+        <button
+          className="top-back-btn"
+          onMouseEnter={playHoverSound}
+          onClick={() => handleBackNav()}
+        >
           GO BACK
         </button>
         <h2 className="top-title">POKéMON STORAGE</h2>
@@ -141,6 +167,7 @@ export default function AllPokemon({ back }) {
                     isListed ? "listed" : ""
                   }`}
                   style={{ borderColor: getTypeColor(types[0]) }}
+                  onMouseEnter={playHoverSound}
                   onClick={() => setSelectedMon(m)}
                 >
                   {/* Badges Container */}
@@ -151,7 +178,7 @@ export default function AllPokemon({ back }) {
                     {/* Listed badge */}
                     {isListed && (
                       <div className="listed-badge">
-                        🏷️ {ethers.formatEther(listingPrice)} ETH
+                        {ethers.formatEther(listingPrice)} ETH
                       </div>
                     )}
                   </div>
