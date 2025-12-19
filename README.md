@@ -1,3 +1,6 @@
+<p align="center">
+<img src="public\img_assets\icon.png" alt="Logo of Pokemon Dungeons" width="200" height="200">
+</p>
 # Pokemon Dungeons
 
 > _In fulfillment of Bootcamp requirements as the third and final project._
@@ -9,8 +12,7 @@ This web application serves as a technical proof of concept demonstrating modern
 > [!WARNING]
 > This system is developed strictly as a proof of concept and is not intended for commercial deployment. If adapted for commercial use, all NFT metadata, tokenized assets, artwork, names, and associated intellectual property must be replaced with original or properly licensed content.
 
-> [!CAUTION]
->  _The developer disclaims any liability for any legal, intellectual property, or regulatory issues arising from the minting, trading, or use of NFTs within this project._
+> [!CAUTION] > _The developer disclaims any liability for any legal, intellectual property, or regulatory issues arising from the minting, trading, or use of NFTs within this project._
 
 ---
 
