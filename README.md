@@ -39,17 +39,21 @@ Pokémon are implemented as ERC-721 compliant NFTs, ensuring each minted Pokémo
 
 Ownership, transfers, and trades are fully managed on-chain, meaning players retain full control over their assets independent of the application itself. A built-in decentralized marketplace enables users to list, buy, and sell Pokémon NFTs, demonstrating real-world NFT trading mechanics such as wallet-based transactions and ownership verification.
 
-### 2. MetaMask Wallet Integration
+### 2. Play-to-Earn (P2E) mechanics
+
+During gameplay, when a wild Pokémon encounter occurs, the wild Pokémon’s stats and moveset are automatically generated. Upon defeating the Pokémon, trainers may attempt to capture it, mint it as an NFT on the blockchain, and choose whether to retain it for gameplay or list it on the marketplace for sale.
+
+### 3. MetaMask Wallet Integration
 
 MetaMask is used as the primary Web3 wallet provider for blockchain interactions within the application. Users connect their MetaMask wallet to authenticate ownership, sign transactions, and interact with smart contracts directly from the browser.
 
 This integration enables secure NFT minting, transfers, and marketplace transactions without exposing private keys to the application. All blockchain operations require explicit user confirmation through MetaMask, reinforcing user-controlled asset management and decentralized security principles.
 
-### 3. Firebase Integration
+### 4. Firebase Integration
 
 Firebase and Firestore are used to manage off-chain data that does not belong on the blockchain. This includes user authentication, wallet address mapping, player profiles, and auxiliary game data.
 
-### 4. Stat Randomization and Asset Uniqueness
+### 5. Stat Randomization and Asset Uniqueness
 
 Each Pokémon NFT is generated with randomized attributes, including stats and movesets, ensuring that no two Pokémon are ever identical. Because these attributes are tied to the minted NFT, they persist across transfers and trades. This allows Pokémon to retain their individual identity and value, whether held by the original minter or acquired through the marketplace.
 
