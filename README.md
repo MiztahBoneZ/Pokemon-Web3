@@ -1,7 +1,8 @@
 <p align="center">
 <img src="public\img_assets\icon.png" alt="Logo of Pokemon Dungeons" width="200" height="200">
 </p>
-# Pokemon Dungeons
+
+ # Pokemon Dungeons
 
 > _In fulfillment of Bootcamp requirements as the third and final project._
 
