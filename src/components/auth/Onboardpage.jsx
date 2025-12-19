@@ -32,6 +32,8 @@ export default function OnboardingPage() {
   const db = getFirestore();
 
   useEffect(() => {
+    document.body.style.overflow = "hidden";
+
     const checkUser = async () => {
       const user = auth.currentUser;
 
@@ -43,13 +45,16 @@ export default function OnboardingPage() {
 
       const userRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userRef);
-
+      /* Commented out for testing purposes
       if (userDoc.exists() && userDoc.data().hasCompletedOnboarding) {
         navigate("/game");
-      }
+      } */
     };
 
     checkUser();
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [navigate, db]);
 
   const getRarity = (stats) => {
@@ -675,48 +680,49 @@ export default function OnboardingPage() {
                     ))}
                   </div>
                 </div>
-
-                {!showNicknameInput ? (
+                <div className="action-buttons">
+                  {!showNicknameInput ? (
+                    <button
+                      className="secondary-button"
+                      onClick={() => setShowNicknameInput(true)}
+                      disabled={isMinting}
+                    >
+                      Give Nickname (Updates Blockchain)
+                    </button>
+                  ) : (
+                    <div className="nickname-input-container">
+                      <input
+                        type="text"
+                        value={pokemonNickname}
+                        onChange={(e) => setPokemonNickname(e.target.value)}
+                        placeholder="Enter nickname..."
+                        maxLength={12}
+                        className="nickname-input"
+                      />
+                      <button
+                        className="small-button"
+                        onClick={saveNickname}
+                        disabled={isMinting}
+                      >
+                        {isMinting ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        className="small-button cancel"
+                        onClick={() => setShowNicknameInput(false)}
+                        disabled={isMinting}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                   <button
-                    className="secondary-button"
-                    onClick={() => setShowNicknameInput(true)}
-                    disabled={isMinting}
+                    className="primary-button large"
+                    onClick={() => navigate("/game")}
                   >
-                    Give Nickname (Updates Blockchain)
+                    Start Adventure
                   </button>
-                ) : (
-                  <div className="nickname-input-container">
-                    <input
-                      type="text"
-                      value={pokemonNickname}
-                      onChange={(e) => setPokemonNickname(e.target.value)}
-                      placeholder="Enter nickname..."
-                      maxLength={12}
-                      className="nickname-input"
-                    />
-                    <button
-                      className="small-button"
-                      onClick={saveNickname}
-                      disabled={isMinting}
-                    >
-                      {isMinting ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      className="small-button cancel"
-                      onClick={() => setShowNicknameInput(false)}
-                      disabled={isMinting}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
+                </div>
               </div>
-              <button
-                className="primary-button large"
-                onClick={() => navigate("/game")}
-              >
-                Start Your Adventure!
-              </button>
             </div>
           </div>
         )}

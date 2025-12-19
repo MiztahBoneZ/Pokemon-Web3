@@ -8,8 +8,9 @@
 }
 
 .gamepage-container {
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
+  overflow: hidden;
   background: #0f380f;
   display: flex;
   flex-direction: column;
@@ -18,7 +19,6 @@
   position: relative;
   color: #9bbc0f;
   font-family: "Press Start 2P", cursive;
-  overflow: hidden;
   border: 4px #ffcb05 ridge;
   border-right-style: dashed;
   border-left-style: dashed;
