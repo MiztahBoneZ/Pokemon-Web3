@@ -291,3 +291,138 @@
   background: #4ade80;
   transition: width 0.3s;
 }
+
+/* Add these styles to your Battle.css file */
+
+.move-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 16px;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.move-btn.out-of-pp {
+  cursor: not-allowed;
+  background: #333 !important;
+}
+
+.move-name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.move-info {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  width: 100%;
+}
+
+.move-type {
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.move-category {
+  padding: 2px 8px;
+  background: #555;
+  border-radius: 4px;
+  color: white;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.move-power {
+  padding: 2px 8px;
+  background: #dc2626;
+  border-radius: 4px;
+  color: white;
+  font-size: 10px;
+}
+
+.move-pp {
+  padding: 2px 8px;
+  background: #2563eb;
+  border-radius: 4px;
+  color: white;
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 8px;
+  background: #dc2626;
+  color: white;
+  font-weight: bold;
+}
+
+.stat-changes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.stat-change {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.stat-change.buff {
+  background: #22c55e;
+  color: white;
+}
+
+.stat-change.debuff {
+  background: #ef4444;
+  color: white;
+}
+
+/* Improve move button hover */
+.move-btn:not(.out-of-pp):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Better battle log styling */
+.battle-log {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 120px;
+  max-height: 120px;
+  overflow-y: auto;
+  margin: 16px 0;
+}
+
+.log-entry {
+  padding: 4px 0;
+  color: white;
+  font-size: 14px;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -10,10 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import "./TeamSelect.css";
 
-export default function TeamSelect({
-  onConfirm = () => {},
-  onCancel = () => {},
-}) {
+export default function TeamSelect() {
   const [monList, setMonList] = useState([]);
   const [team, setTeam] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
@@ -86,7 +83,7 @@ export default function TeamSelect({
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000);
+    setTimeout(() => setToastMessage(""), 4000);
   };
   /*
       Confirmation to save current selected team to firestore db

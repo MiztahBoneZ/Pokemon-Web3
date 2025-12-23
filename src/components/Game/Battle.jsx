@@ -5,98 +5,11 @@ import { getFirestore, doc, setDoc } from "firebase/firestore";
 import PokemonNFTABI from "../../Core/PokemonNFT.json";
 import "./Battle.css";
 
+import MOVES_DATABASE from "./Data/MoveDatabase";
+import TYPE_EFFECTIVENESS from "./Data/TypeEffectiveness";
+import BIOMES from "./Data/Biomes";
+
 const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
-
-const BIOMES = {
-  forest: {
-    name: "🌲 Forest",
-    types: ["grass", "bug", "normal"],
-    color: "#78C850",
-  },
-  ocean: {
-    name: "🌊 Ocean",
-    types: ["water"],
-    color: "#6890F0",
-  },
-  volcano: {
-    name: "🔥 Volcano",
-    types: ["fire", "rock", "ground"],
-    color: "#F08030",
-  },
-  powerPlant: {
-    name: "⚡ Power Plant",
-    types: ["electric", "steel"],
-    color: "#F8D030",
-  },
-  hauntedTower: {
-    name: "👻 Haunted Tower",
-    types: ["ghost", "dark", "psychic"],
-    color: "#705898",
-  },
-  iceCave: {
-    name: "❄️ Ice Cave",
-    types: ["ice"],
-    color: "#98D8D8",
-  },
-  mountain: {
-    name: "⛰️ Mountain",
-    types: ["fighting", "rock", "flying"],
-    color: "#B8A038",
-  },
-  fairy: {
-    name: "✨ Fairy Garden",
-    types: ["fairy", "grass"],
-    color: "#EE99AC",
-  },
-};
-
-const TYPE_CHART = {
-  normal: { weak: ["fighting"], strong: [] },
-  fire: {
-    weak: ["water", "rock", "ground"],
-    strong: ["grass", "ice", "bug", "steel"],
-  },
-  water: { weak: ["electric", "grass"], strong: ["fire", "ground", "rock"] },
-  electric: { weak: ["ground"], strong: ["water", "flying"] },
-  grass: {
-    weak: ["fire", "ice", "bug", "flying"],
-    strong: ["water", "ground", "rock"],
-  },
-  ice: {
-    weak: ["fire", "fighting", "rock", "steel"],
-    strong: ["grass", "ground", "flying", "dragon"],
-  },
-  fighting: {
-    weak: ["flying", "psychic", "fairy"],
-    strong: ["normal", "ice", "rock", "dark", "steel"],
-  },
-  poison: { weak: ["ground", "psychic"], strong: ["grass", "fairy"] },
-  ground: {
-    weak: ["water", "grass", "ice"],
-    strong: ["fire", "electric", "poison", "rock", "steel"],
-  },
-  flying: {
-    weak: ["electric", "ice", "rock"],
-    strong: ["grass", "fighting", "bug"],
-  },
-  psychic: { weak: ["bug", "ghost", "dark"], strong: ["fighting", "poison"] },
-  bug: {
-    weak: ["fire", "flying", "rock"],
-    strong: ["grass", "psychic", "dark"],
-  },
-  rock: {
-    weak: ["water", "grass", "fighting", "ground", "steel"],
-    strong: ["fire", "ice", "flying", "bug"],
-  },
-  ghost: { weak: ["ghost", "dark"], strong: ["psychic", "ghost"] },
-  dragon: { weak: ["ice", "dragon", "fairy"], strong: ["dragon"] },
-  dark: { weak: ["fighting", "bug", "fairy"], strong: ["psychic", "ghost"] },
-  steel: {
-    weak: ["fire", "fighting", "ground"],
-    strong: ["ice", "rock", "fairy"],
-  },
-  fairy: { weak: ["poison", "steel"], strong: ["fighting", "dragon", "dark"] },
-};
 
 export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const [playerTeam, setPlayerTeam] = useState([]);
@@ -110,7 +23,61 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const [currentBiome, setCurrentBiome] = useState(null);
   const [captureChance, setCaptureChance] = useState(0);
   const [isMinting, setIsMinting] = useState(false);
+  const [playerStatChanges, setPlayerStatChanges] = useState({});
+  const [wildStatChanges, setWildStatChanges] = useState({});
+  const [playerStatus, setPlayerStatus] = useState(null);
+  const [wildStatus, setWildStatus] = useState(null);
+  const [movePP, setMovePP] = useState({});
   const db = getFirestore();
+
+  const validateAndFixMoves = (pokemon) => {
+    const validMoves = pokemon.moves.filter((move) => MOVES_DATABASE[move]);
+
+    if (validMoves.length < 4) {
+      const defaultMovesByType = {
+        normal: ["tackle", "quick-attack", "body-slam"],
+        fire: ["ember", "fire-punch", "flamethrower"],
+        water: ["water-gun", "bubble-beam", "surf"],
+        electric: ["thunder-shock", "thunderbolt"],
+        grass: ["vine-whip", "razor-leaf", "energy-ball"],
+        ice: ["ice-beam", "ice-punch"],
+        fighting: ["karate-chop", "brick-break"],
+        poison: ["poison-sting", "sludge-bomb"],
+        ground: ["mud-slap", "earthquake"],
+        flying: ["peck", "aerial-ace"],
+        psychic: ["confusion", "psychic"],
+        bug: ["bug-bite", "x-scissor"],
+        rock: ["rock-throw", "rock-slide"],
+        ghost: ["shadow-ball", "shadow-claw"],
+        dragon: ["dragon-rage", "dragon-claw"],
+        dark: ["bite", "crunch"],
+        steel: ["iron-tail", "flash-cannon"],
+        fairy: ["fairy-wind", "dazzling-gleam"],
+      };
+
+      const typeBasedMoves = pokemon.types?.flatMap(
+        (type) => defaultMovesByType[type] || ["tackle"]
+      ) || ["tackle"];
+
+      const allMoves = [...validMoves];
+      for (const move of typeBasedMoves) {
+        if (!allMoves.includes(move) && allMoves.length < 4) {
+          allMoves.push(move);
+        }
+      }
+
+      const genericMoves = ["tackle", "quick-attack", "body-slam", "scratch"];
+      for (const move of genericMoves) {
+        if (!allMoves.includes(move) && allMoves.length < 4) {
+          allMoves.push(move);
+        }
+      }
+
+      return allMoves.slice(0, 4);
+    }
+
+    return validMoves.slice(0, 4);
+  };
 
   useEffect(() => {
     console.log("Battle received team prop:", team);
@@ -118,15 +85,33 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     console.log("First pokemon types:", team[0]?.types);
 
     if (playerTeam.length === 0 && team.length > 0) {
-      const initializedTeam = team.map((pokemon) => ({
-        ...pokemon,
-        sessionLevel: pokemon.sessionLevel || 1,
-        currentHP: pokemon.currentHP || pokemon.stats.hp,
-        maxHP: pokemon.maxHP || pokemon.stats.hp,
-        currentStats: pokemon.currentStats || { ...pokemon.stats },
-        expGained: pokemon.expGained || 0,
-      }));
+      const initializedTeam = team.map((pokemon) => {
+        console.log("Firebase moves:", pokemon.moves);
+        console.log(
+          "Resolved moves:",
+          pokemon.moves?.map((m) => MOVES_DATABASE[m])
+        );
+
+        const validMoves = validateAndFixMoves(pokemon);
+
+        return {
+          ...pokemon,
+          moves: validMoves,
+          sessionLevel: pokemon.sessionLevel || 1,
+          currentHP: pokemon.currentHP || pokemon.stats.hp,
+          maxHP: pokemon.maxHP || pokemon.stats.hp,
+          currentStats: pokemon.currentStats || { ...pokemon.stats },
+          expGained: pokemon.expGained || 0,
+        };
+      });
       setPlayerTeam(initializedTeam);
+
+      const ppTracker = {};
+      initializedTeam[0].moves.forEach((move) => {
+        const moveData = MOVES_DATABASE[move];
+        ppTracker[move] = moveData ? moveData.pp : 10;
+      });
+      setMovePP(ppTracker);
     } else if (playerTeam.length > 0) {
       initializeBattle();
     }
@@ -138,6 +123,10 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     setIsPlayerTurn(true);
     setIsAnimating(false);
     setSelectedMove(null);
+    setPlayerStatChanges({});
+    setWildStatChanges({});
+    setPlayerStatus(null);
+    setWildStatus(null);
 
     if (playerTeam.length > 0) {
       const healedTeam = playerTeam.map((pokemon) => ({
@@ -152,6 +141,13 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       const firstAlive = healedTeam.findIndex((p) => p.currentHP > 0);
       if (firstAlive !== -1) {
         setActivePlayerIndex(firstAlive);
+
+        const ppTracker = {};
+        healedTeam[firstAlive].moves.forEach((move) => {
+          const moveData = MOVES_DATABASE[move];
+          ppTracker[move] = moveData ? moveData.pp : 10;
+        });
+        setMovePP(ppTracker);
       }
     }
 
@@ -177,7 +173,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
       const randomId =
         allPokemon[Math.floor(Math.random() * allPokemon.length)];
-
       const shinyChance = biome.name.includes("✨") ? 0.05 : 0.02;
       const isShiny = Math.random() < shinyChance;
 
@@ -208,9 +203,43 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       }
 
       const allMoves = data.moves.map((m) => m.move.name);
-      const selectedMoves = allMoves
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 4);
+      const availableMoves = allMoves.filter((move) => MOVES_DATABASE[move]);
+
+      const fallbackMoves = ["tackle", "scratch", "quick-attack", "body-slam"];
+      const movesToUse =
+        availableMoves.length >= 4
+          ? availableMoves
+          : [...availableMoves, ...fallbackMoves];
+
+      const damagingMoves = movesToUse.filter((move) => {
+        const moveData = MOVES_DATABASE[move];
+        return moveData && moveData.power > 0;
+      });
+
+      const statusMoves = movesToUse.filter((move) => {
+        const moveData = MOVES_DATABASE[move];
+        return moveData && moveData.power === 0;
+      });
+
+      const selectedMoves = [];
+      const shuffledDamaging = damagingMoves.sort(() => 0.5 - Math.random());
+      selectedMoves.push(...shuffledDamaging.slice(0, 3));
+
+      if (statusMoves.length > 0) {
+        selectedMoves.push(
+          statusMoves[Math.floor(Math.random() * statusMoves.length)]
+        );
+      } else if (shuffledDamaging.length > 3) {
+        selectedMoves.push(shuffledDamaging[3]);
+      }
+
+      while (selectedMoves.length < 4) {
+        const fallback =
+          fallbackMoves[selectedMoves.length % fallbackMoves.length];
+        if (!selectedMoves.includes(fallback)) {
+          selectedMoves.push(fallback);
+        }
+      }
 
       const total = Object.values(randomizedStats).reduce(
         (sum, val) => sum + val,
@@ -236,7 +265,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         types,
         baseStats: randomizedStats,
         stats: scaledStats,
-        moves: selectedMoves,
+        moves: selectedMoves.slice(0, 4),
         rarity: rarity.tier,
         isShiny,
         level,
@@ -262,29 +291,93 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     let multiplier = 1;
 
     defenderTypes.forEach((defType) => {
-      if (TYPE_CHART[moveType]?.strong?.includes(defType)) {
+      const effectiveness = TYPE_EFFECTIVENESS[moveType];
+      if (!effectiveness) return;
+
+      if (effectiveness.superEffective.includes(defType)) {
         multiplier *= 2;
       }
-      if (TYPE_CHART[moveType]?.weak?.includes(defType)) {
+      if (effectiveness.notVery.includes(defType)) {
         multiplier *= 0.5;
+      }
+      if (effectiveness.noEffect.includes(defType)) {
+        multiplier = 0;
       }
     });
 
     return multiplier;
   };
 
-  const calculateDamage = (attacker, defender, moveName) => {
-    const move = { name: moveName, power: 50 };
+  const applyStatModifier = (baseStat, stages) => {
+    if (stages === 0) return baseStat;
+    const multiplier =
+      stages > 0 ? (2 + stages) / 2 : 2 / (2 + Math.abs(stages));
+    return Math.floor(baseStat * multiplier);
+  };
+
+  const calculateDamage = (
+    attacker,
+    defender,
+    moveName,
+    attackerStatChanges,
+    defenderStatChanges
+  ) => {
+    const moveData = MOVES_DATABASE[moveName] || {
+      type: attacker.types[0],
+      category: "physical",
+      power: 50,
+      accuracy: 100,
+    };
+
+    if (moveData.category === "status" || moveData.power === 0) {
+      return { damage: 0, typeMultiplier: 1, isCrit: false, moveData };
+    }
+
     const level = attacker.level || attacker.sessionLevel || 1;
-    const attack = attacker.currentStats?.attack || attacker.stats.attack;
-    const defense = defender.currentStats?.defense || defender.stats.defense;
-    const power = move.power;
-    const moveType = attacker.types[0];
-    const typeMultiplier = getTypeEffectiveness(moveType, defender.types);
+
+    const baseAttack =
+      moveData.category === "physical"
+        ? attacker.currentStats?.attack || attacker.stats.attack
+        : attacker.currentStats?.["special-attack"] ||
+          attacker.stats["special-attack"];
+
+    const baseDefense =
+      moveData.category === "physical"
+        ? defender.currentStats?.defense || defender.stats.defense
+        : defender.currentStats?.["special-defense"] ||
+          defender.stats["special-defense"];
+
+    const attackStat =
+      moveData.category === "physical"
+        ? applyStatModifier(baseAttack, attackerStatChanges.attack || 0)
+        : applyStatModifier(
+            baseAttack,
+            attackerStatChanges["special-attack"] || 0
+          );
+
+    const defenseStat =
+      moveData.category === "physical"
+        ? applyStatModifier(baseDefense, defenderStatChanges.defense || 0)
+        : applyStatModifier(
+            baseDefense,
+            defenderStatChanges["special-defense"] || 0
+          );
+
+    const isCrit = Math.random() < 0.0625;
+    const critMultiplier = isCrit ? 1.5 : 1;
+
+    const hasSTAB = attacker.types.includes(moveData.type);
+    const stabMultiplier = hasSTAB ? 1.5 : 1;
+
+    const typeMultiplier = getTypeEffectiveness(moveData.type, defender.types);
     const random = 0.85 + Math.random() * 0.15;
 
     const damage = Math.floor(
-      ((((2 * level) / 5 + 2) * power * (attack / defense)) / 50 + 2) *
+      ((((2 * level) / 5 + 2) * moveData.power * (attackStat / defenseStat)) /
+        50 +
+        2) *
+        critMultiplier *
+        stabMultiplier *
         typeMultiplier *
         random
     );
@@ -292,6 +385,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     return {
       damage: Math.max(1, damage),
       typeMultiplier,
+      isCrit,
+      hasSTAB,
+      moveData,
     };
   };
 
@@ -302,15 +398,126 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const playerAttack = async (moveIndex) => {
     if (!isPlayerTurn || isAnimating) return;
 
-    setIsAnimating(true);
     const activePokemon = playerTeam[activePlayerIndex];
     const move = activePokemon.moves[moveIndex];
 
-    const { damage, typeMultiplier } = calculateDamage(
-      activePokemon,
-      wildPokemon,
-      move
-    );
+    if (movePP[move] <= 0) {
+      addLog("No PP left for that move!");
+      return;
+    }
+
+    setIsAnimating(true);
+
+    if (playerStatus) {
+      if (playerStatus.type === "sleep" && playerStatus.turns > 0) {
+        addLog(`${activePokemon.name.toUpperCase()} is fast asleep!`);
+        setPlayerStatus({ ...playerStatus, turns: playerStatus.turns - 1 });
+        setIsAnimating(false);
+        setTimeout(() => enemyTurn(), 1500);
+        return;
+      } else if (playerStatus.type === "sleep") {
+        addLog(`${activePokemon.name.toUpperCase()} woke up!`);
+        setPlayerStatus(null);
+      }
+
+      if (playerStatus.type === "paralysis" && Math.random() < 0.25) {
+        addLog(
+          `${activePokemon.name.toUpperCase()} is paralyzed! It can't move!`
+        );
+        setIsAnimating(false);
+        setTimeout(() => enemyTurn(), 1500);
+        return;
+      }
+
+      if (playerStatus.type === "freeze" && Math.random() < 0.8) {
+        addLog(`${activePokemon.name.toUpperCase()} is frozen solid!`);
+        setIsAnimating(false);
+        setTimeout(() => enemyTurn(), 1500);
+        return;
+      } else if (playerStatus.type === "freeze") {
+        addLog(`${activePokemon.name.toUpperCase()} thawed out!`);
+        setPlayerStatus(null);
+      }
+    }
+
+    const { damage, typeMultiplier, isCrit, hasSTAB, moveData } =
+      calculateDamage(
+        activePokemon,
+        wildPokemon,
+        move,
+        playerStatChanges,
+        wildStatChanges
+      );
+
+    if (Math.random() * 100 > moveData.accuracy) {
+      addLog(
+        `${activePokemon.name.toUpperCase()} used ${move
+          .replace("-", " ")
+          .toUpperCase()}!`
+      );
+      addLog("But it missed!");
+      setIsAnimating(false);
+      setMovePP((prev) => ({ ...prev, [move]: prev[move] - 1 }));
+      setTimeout(() => enemyTurn(), 1500);
+      return;
+    }
+
+    if (moveData.category === "status") {
+      addLog(
+        `${activePokemon.name.toUpperCase()} used ${move
+          .replace("-", " ")
+          .toUpperCase()}!`
+      );
+
+      if (moveData.statChanges) {
+        const target = moveData.statChanges.target;
+        const statChange = { ...moveData.statChanges };
+        delete statChange.target;
+
+        if (target === "self") {
+          setPlayerStatChanges((prev) => {
+            const newChanges = { ...prev };
+            for (const stat in statChange) {
+              newChanges[stat] = Math.max(
+                -6,
+                Math.min(6, (prev[stat] || 0) + statChange[stat])
+              );
+            }
+            return newChanges;
+          });
+          const statName = Object.keys(statChange)[0].replace("-", " ");
+          const change = statChange[Object.keys(statChange)[0]];
+          addLog(
+            `${activePokemon.name.toUpperCase()}'s ${statName} ${
+              change > 0 ? "rose" : "fell"
+            }!`
+          );
+        } else {
+          setWildStatChanges((prev) => {
+            const newChanges = { ...prev };
+            for (const stat in statChange) {
+              newChanges[stat] = Math.max(
+                -6,
+                Math.min(6, (prev[stat] || 0) + statChange[stat])
+              );
+            }
+            return newChanges;
+          });
+          const statName = Object.keys(statChange)[0].replace("-", " ");
+          const change = statChange[Object.keys(statChange)[0]];
+          addLog(
+            `Wild ${wildPokemon.name.toUpperCase()}'s ${statName} ${
+              change > 0 ? "rose" : "fell"
+            }!`
+          );
+        }
+      }
+
+      setMovePP((prev) => ({ ...prev, [move]: prev[move] - 1 }));
+      setIsAnimating(false);
+      setTimeout(() => enemyTurn(), 1500);
+      return;
+    }
 
     setWildPokemon((prev) => ({
       ...prev,
@@ -318,15 +525,61 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     }));
 
     let effectiveness = "";
-    if (typeMultiplier > 1) effectiveness = " It's super effective!";
-    if (typeMultiplier < 1) effectiveness = " It's not very effective...";
+    if (typeMultiplier === 0)
+      effectiveness = " It doesn't affect the wild Pokémon...";
+    else if (typeMultiplier > 1) effectiveness = " It's super effective!";
+    else if (typeMultiplier < 1) effectiveness = " It's not very effective...";
 
     addLog(
       `${activePokemon.name.toUpperCase()} used ${move
         .replace("-", " ")
         .toUpperCase()}!`
     );
+    if (isCrit) addLog("A critical hit!");
     addLog(`Dealt ${damage} damage!${effectiveness}`);
+
+    if (moveData.statChanges) {
+      const target = moveData.statChanges.target;
+      const statChange = { ...moveData.statChanges };
+      delete statChange.target;
+
+      if (target === "self") {
+        setPlayerStatChanges((prev) => {
+          const newChanges = { ...prev };
+          for (const stat in statChange) {
+            newChanges[stat] = Math.max(
+              -6,
+              Math.min(6, (prev[stat] || 0) + statChange[stat])
+            );
+          }
+          return newChanges;
+        });
+      }
+    }
+
+    if (playerStatus?.type === "burn") {
+      const burnDamage = Math.floor(activePokemon.maxHP / 16);
+      const updatedTeam = [...playerTeam];
+      updatedTeam[activePlayerIndex].currentHP = Math.max(
+        0,
+        updatedTeam[activePlayerIndex].currentHP - burnDamage
+      );
+      setPlayerTeam(updatedTeam);
+      addLog(`${activePokemon.name.toUpperCase()} is hurt by its burn!`);
+    }
+
+    if (playerStatus?.type === "poison") {
+      const poisonDamage = Math.floor(activePokemon.maxHP / 8);
+      const updatedTeam = [...playerTeam];
+      updatedTeam[activePlayerIndex].currentHP = Math.max(
+        0,
+        updatedTeam[activePlayerIndex].currentHP - poisonDamage
+      );
+      setPlayerTeam(updatedTeam);
+      addLog(`${activePokemon.name.toUpperCase()} is hurt by poison!`);
+    }
+
+    setMovePP((prev) => ({ ...prev, [move]: prev[move] - 1 }));
 
     setTimeout(() => {
       if (wildPokemon.currentHP - damage <= 0) {
@@ -345,14 +598,129 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
     setTimeout(() => {
       const activePokemon = playerTeam[activePlayerIndex];
-      const moveIndex = Math.floor(Math.random() * wildPokemon.moves.length);
-      const move = wildPokemon.moves[moveIndex];
 
-      const { damage, typeMultiplier } = calculateDamage(
+      if (wildStatus) {
+        if (wildStatus.type === "sleep" && wildStatus.turns > 0) {
+          addLog(`Wild ${wildPokemon.name.toUpperCase()} is fast asleep!`);
+          setWildStatus({ ...wildStatus, turns: wildStatus.turns - 1 });
+          setIsPlayerTurn(true);
+          return;
+        } else if (wildStatus.type === "sleep") {
+          addLog(`Wild ${wildPokemon.name.toUpperCase()} woke up!`);
+          setWildStatus(null);
+        }
+
+        if (wildStatus.type === "paralysis" && Math.random() < 0.25) {
+          addLog(
+            `Wild ${wildPokemon.name.toUpperCase()} is paralyzed! It can't move!`
+          );
+          setIsPlayerTurn(true);
+          return;
+        }
+
+        if (wildStatus.type === "freeze" && Math.random() < 0.8) {
+          addLog(`Wild ${wildPokemon.name.toUpperCase()} is frozen solid!`);
+          setIsPlayerTurn(true);
+          return;
+        } else if (wildStatus.type === "freeze") {
+          addLog(`Wild ${wildPokemon.name.toUpperCase()} thawed out!`);
+          setWildStatus(null);
+        }
+      }
+
+      let bestMoveIndex = 0;
+      let bestEffectiveness = -1;
+
+      wildPokemon.moves.forEach((move, idx) => {
+        const moveData = MOVES_DATABASE[move];
+        if (!moveData || moveData.power === 0) return;
+
+        const effectiveness = getTypeEffectiveness(
+          moveData.type,
+          activePokemon.types
+        );
+
+        if (effectiveness > bestEffectiveness) {
+          bestEffectiveness = effectiveness;
+          bestMoveIndex = idx;
+        }
+      });
+
+      const moveIndex =
+        Math.random() < 0.3
+          ? Math.floor(Math.random() * wildPokemon.moves.length)
+          : bestMoveIndex;
+
+      const move = wildPokemon.moves[moveIndex];
+      const { damage, typeMultiplier, isCrit, moveData } = calculateDamage(
         wildPokemon,
         activePokemon,
-        move
+        move,
+        wildStatChanges,
+        playerStatChanges
       );
+
+      if (Math.random() * 100 > moveData.accuracy) {
+        addLog(
+          `Wild ${wildPokemon.name.toUpperCase()} used ${move
+            .replace("-", " ")
+            .toUpperCase()}!`
+        );
+        addLog("But it missed!");
+        setTimeout(() => setIsPlayerTurn(true), 1500);
+        return;
+      }
+
+      if (moveData.category === "status") {
+        addLog(
+          `Wild ${wildPokemon.name.toUpperCase()} used ${move
+            .replace("-", " ")
+            .toUpperCase()}!`
+        );
+
+        if (moveData.statChanges) {
+          const target = moveData.statChanges.target;
+          const statChange = { ...moveData.statChanges };
+          delete statChange.target;
+
+          if (target === "self") {
+            setWildStatChanges((prev) => {
+              const newChanges = { ...prev };
+              for (const stat in statChange) {
+                newChanges[stat] = Math.max(
+                  -6,
+                  Math.min(6, (prev[stat] || 0) + statChange[stat])
+                );
+              }
+              return newChanges;
+            });
+          } else {
+            setPlayerStatChanges((prev) => {
+              const newChanges = { ...prev };
+              for (const stat in statChange) {
+                newChanges[stat] = Math.max(
+                  -6,
+                  Math.min(6, (prev[stat] || 0) + statChange[stat])
+                );
+              }
+              return newChanges;
+            });
+          }
+
+          const statName = Object.keys(statChange)[0].replace("-", " ");
+          const change = statChange[Object.keys(statChange)[0]];
+          const targetName =
+            target === "self"
+              ? `Wild ${wildPokemon.name.toUpperCase()}`
+              : activePokemon.name.toUpperCase();
+          addLog(
+            `${targetName}'s ${statName} ${change > 0 ? "rose" : "fell"}!`
+          );
+        }
+
+        setTimeout(() => setIsPlayerTurn(true), 1500);
+        return;
+      }
 
       const updatedTeam = [...playerTeam];
       updatedTeam[activePlayerIndex].currentHP = Math.max(
@@ -362,15 +730,37 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       setPlayerTeam(updatedTeam);
 
       let effectiveness = "";
-      if (typeMultiplier > 1) effectiveness = " It's super effective!";
-      if (typeMultiplier < 1) effectiveness = " It's not very effective...";
+      if (typeMultiplier === 0)
+        effectiveness = " It doesn't affect your Pokémon...";
+      else if (typeMultiplier > 1) effectiveness = " It's super effective!";
+      else if (typeMultiplier < 1)
+        effectiveness = " It's not very effective...";
 
       addLog(
         `Wild ${wildPokemon.name.toUpperCase()} used ${move
           .replace("-", " ")
           .toUpperCase()}!`
       );
+      if (isCrit) addLog("A critical hit!");
       addLog(`Dealt ${damage} damage!${effectiveness}`);
+
+      if (wildStatus?.type === "burn") {
+        const burnDamage = Math.floor(wildPokemon.maxHP / 16);
+        setWildPokemon((prev) => ({
+          ...prev,
+          currentHP: Math.max(0, prev.currentHP - burnDamage),
+        }));
+        addLog(`Wild ${wildPokemon.name.toUpperCase()} is hurt by its burn!`);
+      }
+
+      if (wildStatus?.type === "poison") {
+        const poisonDamage = Math.floor(wildPokemon.maxHP / 8);
+        setWildPokemon((prev) => ({
+          ...prev,
+          currentHP: Math.max(0, prev.currentHP - poisonDamage),
+        }));
+        addLog(`Wild ${wildPokemon.name.toUpperCase()} is hurt by poison!`);
+      }
 
       setTimeout(() => {
         if (updatedTeam[activePlayerIndex].currentHP <= 0) {
@@ -621,6 +1011,16 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     }
 
     setActivePlayerIndex(index);
+    setPlayerStatChanges({});
+    setPlayerStatus(null);
+
+    const ppTracker = {};
+    playerTeam[index].moves.forEach((move) => {
+      const moveData = MOVES_DATABASE[move];
+      ppTracker[move] = moveData ? moveData.pp : 10;
+    });
+    setMovePP(ppTracker);
+
     addLog(`Go, ${playerTeam[index].name.toUpperCase()}!`);
     enemyTurn();
   };
@@ -673,21 +1073,23 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         background: `linear-gradient(135deg, ${currentBiome.color}22, ${currentBiome.color}44)`,
       }}
     >
-      {/* Biome Header */}
       <div className="biome-header">
         <h2>{currentBiome.name}</h2>
         <span className="floor-indicator">Floor {floor}</span>
       </div>
 
-      {/* Battle Area */}
       <div className="battle-area">
-        {/* Wild Pokémon */}
         <div className="enemy-section">
           <div className="pokemon-info">
             <h3>
               {wildPokemon.isShiny && <span className="shiny-icon">✨</span>}
               {wildPokemon.name.toUpperCase()}
               <span className="level">Lv.{wildPokemon.level}</span>
+              {wildStatus && (
+                <span className="status-badge">
+                  {wildStatus.type.toUpperCase()}
+                </span>
+              )}
             </h3>
             <div className="hp-bar-container">
               <div className="hp-bar">
@@ -721,6 +1123,25 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
                 </span>
               ))}
             </div>
+            {Object.keys(wildStatChanges).length > 0 && (
+              <div className="stat-changes">
+                {Object.entries(wildStatChanges).map(
+                  ([stat, change]) =>
+                    change !== 0 && (
+                      <span
+                        key={stat}
+                        className={`stat-change ${
+                          change > 0 ? "buff" : "debuff"
+                        }`}
+                      >
+                        {stat.replace("-", " ").toUpperCase()}:{" "}
+                        {change > 0 ? "+" : ""}
+                        {change}
+                      </span>
+                    )
+                )}
+              </div>
+            )}
           </div>
           <img
             src={wildPokemon.sprite}
@@ -729,7 +1150,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
           />
         </div>
 
-        {/* Player Pokémon */}
         <div className="player-section">
           <img
             src={activePokemon.sprite}
@@ -740,6 +1160,11 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
             <h3>
               {activePokemon.name.toUpperCase()}
               <span className="level">Lv.{activePokemon.sessionLevel}</span>
+              {playerStatus && (
+                <span className="status-badge">
+                  {playerStatus.type.toUpperCase()}
+                </span>
+              )}
             </h3>
             <div className="hp-bar-container">
               <div className="hp-bar">
@@ -773,11 +1198,29 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
                 ))}
               </div>
             </div>
+            {Object.keys(playerStatChanges).length > 0 && (
+              <div className="stat-changes">
+                {Object.entries(playerStatChanges).map(
+                  ([stat, change]) =>
+                    change !== 0 && (
+                      <span
+                        key={stat}
+                        className={`stat-change ${
+                          change > 0 ? "buff" : "debuff"
+                        }`}
+                      >
+                        {stat.replace("-", " ").toUpperCase()}:{" "}
+                        {change > 0 ? "+" : ""}
+                        {change}
+                      </span>
+                    )
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Battle Log */}
       <div className="battle-log">
         {battleLog.slice(-4).map((log, idx) => (
           <div key={idx} className="log-entry">
@@ -786,20 +1229,53 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         ))}
       </div>
 
-      {/* Action Buttons */}
       <div className="battle-actions">
         {battlePhase === "battle" && isPlayerTurn && !isAnimating && (
           <>
             <div className="moves-grid">
-              {activePokemon.moves.map((move, idx) => (
-                <button
-                  key={idx}
-                  className="move-btn"
-                  onClick={() => playerAttack(idx)}
-                >
-                  {move.replace("-", " ").toUpperCase()}
-                </button>
-              ))}
+              {activePokemon.moves.map((move, idx) => {
+                const moveData = MOVES_DATABASE[move] || {
+                  type: "normal",
+                  power: 50,
+                  pp: 10,
+                };
+                const currentPP = movePP[move] || 0;
+                const isOutOfPP = currentPP <= 0;
+
+                return (
+                  <button
+                    key={idx}
+                    className={`move-btn ${isOutOfPP ? "out-of-pp" : ""}`}
+                    onClick={() => !isOutOfPP && playerAttack(idx)}
+                    disabled={isOutOfPP}
+                    style={{
+                      borderLeft: `4px solid ${getTypeColor(moveData.type)}`,
+                      opacity: isOutOfPP ? 0.5 : 1,
+                    }}
+                  >
+                    <div className="move-name">
+                      {move.replace("-", " ").toUpperCase()}
+                    </div>
+                    <div className="move-info">
+                      <span
+                        className="move-type"
+                        style={{ background: getTypeColor(moveData.type) }}
+                      >
+                        {moveData.type}
+                      </span>
+                      <span className="move-category">{moveData.category}</span>
+                      {moveData.power > 0 && (
+                        <span className="move-power">
+                          PWR: {moveData.power}
+                        </span>
+                      )}
+                      <span className="move-pp">
+                        PP: {currentPP}/{moveData.pp}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
             <div className="other-actions">
               <button className="action-btn" onClick={attemptRun}>
@@ -844,7 +1320,6 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         )}
       </div>
 
-      {/* Team Display */}
       <div className="team-display">
         {playerTeam.map((pokemon, idx) => (
           <div
