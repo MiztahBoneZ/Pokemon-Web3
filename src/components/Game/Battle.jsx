@@ -5,9 +5,9 @@ import { getFirestore, doc, setDoc } from "firebase/firestore";
 import PokemonNFTABI from "../../Core/PokemonNFT.json";
 import "./Battle.css";
 
-import MOVES_DATABASE from "./Data/MoveDatabase";
-import TYPE_EFFECTIVENESS from "./Data/TypeEffectiveness";
-import BIOMES from "./Data/Biomes";
+import MOVES_DATABASE from "./Battle_Data/MoveDatabase";
+import TYPE_EFFECTIVENESS from "./Battle_Data/TypeEffectiveness";
+import BIOMES from "./Battle_Data/Biomes";
 
 const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
