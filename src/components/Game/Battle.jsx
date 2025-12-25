@@ -28,6 +28,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
   const [playerStatus, setPlayerStatus] = useState(null);
   const [wildStatus, setWildStatus] = useState(null);
   const [movePP, setMovePP] = useState({});
+  const [isSwitching, setIsSwitching] = useState(false);
   const db = getFirestore();
 
   const validateAndFixMoves = (pokemon) => {
@@ -391,6 +392,73 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     };
   };
 
+  const applyStatusEffect = (moveData, target, targetName) => {
+    if (!moveData.statusEffect) return;
+
+    const { type, chance } = moveData.statusEffect;
+    
+    if (Math.random() * 100 > chance) return;
+
+    const setStatus = target === "player" ? setPlayerStatus : setWildStatus;
+    
+    // Check if already has a status condition
+    const currentStatus = target === "player" ? playerStatus : wildStatus;
+    if (currentStatus) {
+      addLog(`${targetName} is already affected by ${currentStatus.type}!`);
+      return;
+    }
+
+    switch (type) {
+      case "burn":
+        setStatus({ type: "burn" });
+        addLog(`${targetName} was burned!`);
+        break;
+      case "poison":
+        setStatus({ type: "poison" });
+        addLog(`${targetName} was poisoned!`);
+        break;
+      case "paralysis":
+        setStatus({ type: "paralysis" });
+        addLog(`${targetName} was paralyzed!`);
+        break;
+      case "sleep":
+        const sleepTurns = Math.floor(Math.random() * 3) + 1; // 1-3 turns
+        setStatus({ type: "sleep", turns: sleepTurns });
+        addLog(`${targetName} fell asleep!`);
+        break;
+      case "freeze":
+        setStatus({ type: "freeze" });
+        addLog(`${targetName} was frozen solid!`);
+        break;
+      case "confusion":
+        const confusionTurns = Math.floor(Math.random() * 4) + 1; // 1-4 turns
+        setStatus({ type: "confusion", turns: confusionTurns });
+        addLog(`${targetName} became confused!`);
+        break;
+    }
+  };
+
+  const processEndOfTurnStatus = (pokemon, isPlayer) => {
+    const status = isPlayer ? playerStatus : wildStatus;
+    if (!status) return 0;
+
+    const pokemonName = pokemon.name.toUpperCase();
+    let damage = 0;
+
+    switch (status.type) {
+      case "burn":
+        damage = Math.floor(pokemon.maxHP / 16);
+        addLog(`${pokemonName} is hurt by its burn!`);
+        break;
+      case "poison":
+        damage = Math.floor(pokemon.maxHP / 8);
+        addLog(`${pokemonName} is hurt by poison!`);
+        break;
+    }
+
+    return damage;
+  };
+
   const addLog = (message) => {
     setBattleLog((prev) => [...prev, message]);
   };
@@ -408,35 +476,66 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
     setIsAnimating(true);
 
-    if (playerStatus) {
-      if (playerStatus.type === "sleep" && playerStatus.turns > 0) {
+    // Check confusion
+    if (playerStatus?.type === "confusion") {
+      if (playerStatus.turns > 0) {
+        addLog(`${activePokemon.name.toUpperCase()} is confused!`);
+        if (Math.random() < 0.33) {
+          const confusionDamage = Math.floor(activePokemon.maxHP * 0.125);
+          const updatedTeam = [...playerTeam];
+          updatedTeam[activePlayerIndex].currentHP = Math.max(
+            0,
+            updatedTeam[activePlayerIndex].currentHP - confusionDamage
+          );
+          setPlayerTeam(updatedTeam);
+          addLog(`It hurt itself in its confusion!`);
+          setPlayerStatus({ ...playerStatus, turns: playerStatus.turns - 1 });
+          setIsAnimating(false);
+          setTimeout(() => enemyTurn(), 1500);
+          return;
+        }
+        setPlayerStatus({ ...playerStatus, turns: playerStatus.turns - 1 });
+        if (playerStatus.turns === 0) {
+          addLog(`${activePokemon.name.toUpperCase()} snapped out of confusion!`);
+          setPlayerStatus(null);
+        }
+      }
+    }
+
+    // Check sleep
+    if (playerStatus?.type === "sleep") {
+      if (playerStatus.turns > 0) {
         addLog(`${activePokemon.name.toUpperCase()} is fast asleep!`);
         setPlayerStatus({ ...playerStatus, turns: playerStatus.turns - 1 });
         setIsAnimating(false);
         setTimeout(() => enemyTurn(), 1500);
         return;
-      } else if (playerStatus.type === "sleep") {
+      } else {
         addLog(`${activePokemon.name.toUpperCase()} woke up!`);
         setPlayerStatus(null);
       }
+    }
 
-      if (playerStatus.type === "paralysis" && Math.random() < 0.25) {
-        addLog(
-          `${activePokemon.name.toUpperCase()} is paralyzed! It can't move!`
-        );
-        setIsAnimating(false);
-        setTimeout(() => enemyTurn(), 1500);
-        return;
-      }
+    // Check paralysis
+    if (playerStatus?.type === "paralysis" && Math.random() < 0.25) {
+      addLog(
+        `${activePokemon.name.toUpperCase()} is paralyzed! It can't move!`
+      );
+      setIsAnimating(false);
+      setTimeout(() => enemyTurn(), 1500);
+      return;
+    }
 
-      if (playerStatus.type === "freeze" && Math.random() < 0.8) {
+    // Check freeze
+    if (playerStatus?.type === "freeze") {
+      if (Math.random() < 0.2) {
+        addLog(`${activePokemon.name.toUpperCase()} thawed out!`);
+        setPlayerStatus(null);
+      } else {
         addLog(`${activePokemon.name.toUpperCase()} is frozen solid!`);
         setIsAnimating(false);
         setTimeout(() => enemyTurn(), 1500);
         return;
-      } else if (playerStatus.type === "freeze") {
-        addLog(`${activePokemon.name.toUpperCase()} thawed out!`);
-        setPlayerStatus(null);
       }
     }
 
@@ -513,6 +612,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         }
       }
 
+      // Apply status effects from status moves
+      applyStatusEffect(moveData, "wild", `Wild ${wildPokemon.name.toUpperCase()}`);
+
       setMovePP((prev) => ({ ...prev, [move]: prev[move] - 1 }));
       setIsAnimating(false);
       setTimeout(() => enemyTurn(), 1500);
@@ -538,6 +640,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     if (isCrit) addLog("A critical hit!");
     addLog(`Dealt ${damage} damage!${effectiveness}`);
 
+    // Apply secondary status effects from damaging moves
+    applyStatusEffect(moveData, "wild", `Wild ${wildPokemon.name.toUpperCase()}`);
+
     if (moveData.statChanges) {
       const target = moveData.statChanges.target;
       const statChange = { ...moveData.statChanges };
@@ -557,26 +662,15 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       }
     }
 
-    if (playerStatus?.type === "burn") {
-      const burnDamage = Math.floor(activePokemon.maxHP / 16);
+    // End of turn status damage for player
+    const statusDamage = processEndOfTurnStatus(activePokemon, true);
+    if (statusDamage > 0) {
       const updatedTeam = [...playerTeam];
       updatedTeam[activePlayerIndex].currentHP = Math.max(
         0,
-        updatedTeam[activePlayerIndex].currentHP - burnDamage
+        updatedTeam[activePlayerIndex].currentHP - statusDamage
       );
       setPlayerTeam(updatedTeam);
-      addLog(`${activePokemon.name.toUpperCase()} is hurt by its burn!`);
-    }
-
-    if (playerStatus?.type === "poison") {
-      const poisonDamage = Math.floor(activePokemon.maxHP / 8);
-      const updatedTeam = [...playerTeam];
-      updatedTeam[activePlayerIndex].currentHP = Math.max(
-        0,
-        updatedTeam[activePlayerIndex].currentHP - poisonDamage
-      );
-      setPlayerTeam(updatedTeam);
-      addLog(`${activePokemon.name.toUpperCase()} is hurt by poison!`);
     }
 
     setMovePP((prev) => ({ ...prev, [move]: prev[move] - 1 }));
@@ -599,32 +693,60 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     setTimeout(() => {
       const activePokemon = playerTeam[activePlayerIndex];
 
-      if (wildStatus) {
-        if (wildStatus.type === "sleep" && wildStatus.turns > 0) {
+      // Check confusion
+      if (wildStatus?.type === "confusion") {
+        if (wildStatus.turns > 0) {
+          addLog(`Wild ${wildPokemon.name.toUpperCase()} is confused!`);
+          if (Math.random() < 0.33) {
+            const confusionDamage = Math.floor(wildPokemon.maxHP * 0.125);
+            setWildPokemon((prev) => ({
+              ...prev,
+              currentHP: Math.max(0, prev.currentHP - confusionDamage),
+            }));
+            addLog(`It hurt itself in its confusion!`);
+            setWildStatus({ ...wildStatus, turns: wildStatus.turns - 1 });
+            setIsPlayerTurn(true);
+            return;
+          }
+          setWildStatus({ ...wildStatus, turns: wildStatus.turns - 1 });
+          if (wildStatus.turns === 0) {
+            addLog(`Wild ${wildPokemon.name.toUpperCase()} snapped out of confusion!`);
+            setWildStatus(null);
+          }
+        }
+      }
+
+      // Check sleep
+      if (wildStatus?.type === "sleep") {
+        if (wildStatus.turns > 0) {
           addLog(`Wild ${wildPokemon.name.toUpperCase()} is fast asleep!`);
           setWildStatus({ ...wildStatus, turns: wildStatus.turns - 1 });
           setIsPlayerTurn(true);
           return;
-        } else if (wildStatus.type === "sleep") {
+        } else {
           addLog(`Wild ${wildPokemon.name.toUpperCase()} woke up!`);
           setWildStatus(null);
         }
+      }
 
-        if (wildStatus.type === "paralysis" && Math.random() < 0.25) {
-          addLog(
-            `Wild ${wildPokemon.name.toUpperCase()} is paralyzed! It can't move!`
-          );
-          setIsPlayerTurn(true);
-          return;
-        }
+      // Check paralysis
+      if (wildStatus?.type === "paralysis" && Math.random() < 0.25) {
+        addLog(
+          `Wild ${wildPokemon.name.toUpperCase()} is paralyzed! It can't move!`
+        );
+        setIsPlayerTurn(true);
+        return;
+      }
 
-        if (wildStatus.type === "freeze" && Math.random() < 0.8) {
+      // Check freeze
+      if (wildStatus?.type === "freeze") {
+        if (Math.random() < 0.2) {
+          addLog(`Wild ${wildPokemon.name.toUpperCase()} thawed out!`);
+          setWildStatus(null);
+        } else {
           addLog(`Wild ${wildPokemon.name.toUpperCase()} is frozen solid!`);
           setIsPlayerTurn(true);
           return;
-        } else if (wildStatus.type === "freeze") {
-          addLog(`Wild ${wildPokemon.name.toUpperCase()} thawed out!`);
-          setWildStatus(null);
         }
       }
 
@@ -718,6 +840,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
           );
         }
 
+        // Apply status effects from status moves
+        applyStatusEffect(moveData, "player", activePokemon.name.toUpperCase());
+
         setTimeout(() => setIsPlayerTurn(true), 1500);
         return;
       }
@@ -744,22 +869,16 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       if (isCrit) addLog("A critical hit!");
       addLog(`Dealt ${damage} damage!${effectiveness}`);
 
-      if (wildStatus?.type === "burn") {
-        const burnDamage = Math.floor(wildPokemon.maxHP / 16);
-        setWildPokemon((prev) => ({
-          ...prev,
-          currentHP: Math.max(0, prev.currentHP - burnDamage),
-        }));
-        addLog(`Wild ${wildPokemon.name.toUpperCase()} is hurt by its burn!`);
-      }
+      // Apply secondary status effects from damaging moves
+      applyStatusEffect(moveData, "player", activePokemon.name.toUpperCase());
 
-      if (wildStatus?.type === "poison") {
-        const poisonDamage = Math.floor(wildPokemon.maxHP / 8);
+      // End of turn status damage for wild pokemon
+      const statusDamage = processEndOfTurnStatus(wildPokemon, false);
+      if (statusDamage > 0) {
         setWildPokemon((prev) => ({
           ...prev,
-          currentHP: Math.max(0, prev.currentHP - poisonDamage),
+          currentHP: Math.max(0, prev.currentHP - statusDamage),
         }));
-        addLog(`Wild ${wildPokemon.name.toUpperCase()} is hurt by poison!`);
       }
 
       setTimeout(() => {
@@ -782,6 +901,16 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     if (nextIndex !== -1) {
       setTimeout(() => {
         setActivePlayerIndex(nextIndex);
+        setPlayerStatChanges({});
+        setPlayerStatus(null);
+        
+        const ppTracker = {};
+        playerTeam[nextIndex].moves.forEach((move) => {
+          const moveData = MOVES_DATABASE[move];
+          ppTracker[move] = moveData ? moveData.pp : 10;
+        });
+        setMovePP(ppTracker);
+        
         addLog(`Go, ${playerTeam[nextIndex].name.toUpperCase()}!`);
         setIsPlayerTurn(true);
       }, 2000);
@@ -845,6 +974,15 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     const hpPercent = (wildPokemon.currentHP / wildPokemon.maxHP) * 100;
     if (hpPercent < 25) chance += 20;
     else if (hpPercent < 50) chance += 10;
+
+    // Status conditions increase capture rate
+    if (wildStatus) {
+      if (wildStatus.type === "sleep" || wildStatus.type === "freeze") {
+        chance += 15;
+      } else {
+        chance += 10;
+      }
+    }
 
     const rarityPenalty = {
       Common: 0,
@@ -1010,19 +1148,32 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       return;
     }
 
-    setActivePlayerIndex(index);
-    setPlayerStatChanges({});
-    setPlayerStatus(null);
+    if (index === activePlayerIndex) {
+      return;
+    }
 
-    const ppTracker = {};
-    playerTeam[index].moves.forEach((move) => {
-      const moveData = MOVES_DATABASE[move];
-      ppTracker[move] = moveData ? moveData.pp : 10;
-    });
-    setMovePP(ppTracker);
+    setIsSwitching(true);
+    addLog(`${playerTeam[activePlayerIndex].name.toUpperCase()}, come back!`);
+    
+    setTimeout(() => {
+      setActivePlayerIndex(index);
+      setPlayerStatChanges({});
+      setPlayerStatus(null);
 
-    addLog(`Go, ${playerTeam[index].name.toUpperCase()}!`);
-    enemyTurn();
+      const ppTracker = {};
+      playerTeam[index].moves.forEach((move) => {
+        const moveData = MOVES_DATABASE[move];
+        ppTracker[move] = moveData ? moveData.pp : 10;
+      });
+      setMovePP(ppTracker);
+
+      addLog(`Go, ${playerTeam[index].name.toUpperCase()}!`);
+      
+      setIsSwitching(false);
+      
+      // Enemy gets a free turn after switching
+      setTimeout(() => enemyTurn(), 1000);
+    }, 500);
   };
 
   const attemptRun = () => {
@@ -1060,12 +1211,23 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     return colors[type] || "#777";
   };
 
+  const getStatusColor = (status) => {
+    const colors = {
+      burn: "#FF6B3D",
+      poison: "#A040A0",
+      paralysis: "#F8D030",
+      sleep: "#6890F0",
+      freeze: "#98D8D8",
+      confusion: "#F85888",
+    };
+    return colors[status] || "#777";
+  };
+
   if (!wildPokemon || !currentBiome) {
     return <div className="battle-loading">Loading battle...</div>;
   }
 
   const activePokemon = playerTeam[activePlayerIndex];
-
   return (
     <div
       className="battle-container"
@@ -1086,8 +1248,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
               {wildPokemon.name.toUpperCase()}
               <span className="level">Lv.{wildPokemon.level}</span>
               {wildStatus && (
-                <span className="status-badge">
+                <span 
+                  className="status-badge"
+                  style={{ backgroundColor: getStatusColor(wildStatus.type) }}
+                >
                   {wildStatus.type.toUpperCase()}
+                  {wildStatus.turns && ` (${wildStatus.turns})`}
                 </span>
               )}
             </h3>
@@ -1161,8 +1327,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
               {activePokemon.name.toUpperCase()}
               <span className="level">Lv.{activePokemon.sessionLevel}</span>
               {playerStatus && (
-                <span className="status-badge">
+                <span 
+                  className="status-badge"
+                  style={{ backgroundColor: getStatusColor(playerStatus.type) }}
+                >
                   {playerStatus.type.toUpperCase()}
+                  {playerStatus.turns && ` (${playerStatus.turns})`}
                 </span>
               )}
             </h3>
@@ -1230,7 +1400,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       </div>
 
       <div className="battle-actions">
-        {battlePhase === "battle" && isPlayerTurn && !isAnimating && (
+        {battlePhase === "battle" && isPlayerTurn && !isAnimating && !isSwitching && (
           <>
             <div className="moves-grid">
               {activePokemon.moves.map((move, idx) => {
@@ -1288,8 +1458,12 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         {battlePhase === "victory" && !isMinting && (
           <div className="victory-actions">
             <h3>Victory!</h3>
+            <p className="capture-info">
+              Capture chance: {captureChance}%
+              {wildStatus && " (+bonus from status!)"}
+            </p>
             <button className="capture-btn" onClick={attemptCapture}>
-              Attempt Capture ({captureChance}% chance)
+              Attempt Capture
             </button>
             <button
               className="continue-btn"
@@ -1331,8 +1505,19 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
               idx !== activePlayerIndex &&
               isPlayerTurn &&
               !isAnimating &&
+              !isSwitching &&
               switchPokemon(idx)
             }
+            style={{
+              cursor:
+                idx !== activePlayerIndex &&
+                isPlayerTurn &&
+                !isAnimating &&
+                !isSwitching &&
+                pokemon.currentHP > 0
+                  ? "pointer"
+                  : "default",
+            }}
           >
             <img src={pokemon.sprite} alt={pokemon.name} />
             <div className="mini-hp">
@@ -1348,4 +1533,5 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       </div>
     </div>
   );
+
 }

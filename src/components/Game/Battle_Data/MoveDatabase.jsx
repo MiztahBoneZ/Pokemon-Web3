@@ -144,6 +144,10 @@ const MOVES_DATABASE = {
     accuracy: 90,
     pp: 10,
   },
+  "will-o-wisp": {
+    type: "fire", category: "status", power: 0, accuracy: 85, pp: 15,
+    statusEffect: { type: "burn", chance: 100 }
+  },
 
   // Water moves
   "water-gun": {
@@ -961,6 +965,7 @@ const MOVES_DATABASE = {
     accuracy: 100,
     pp: 10,
     statChanges: { "special-attack": 1, defense: 1, target: "self" },
+    statusEffect: { type: "burn", chance: 100 },
   },
   leer: {
     type: "normal",

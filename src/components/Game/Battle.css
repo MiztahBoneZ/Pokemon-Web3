@@ -155,7 +155,7 @@
   background: #0f380f;
   border: 3px solid #9bbc0f;
   padding: 10px;
-  height: 80px;
+  height: 80px; 
   overflow-y: auto;
   box-shadow: inset 2px 2px 0 #1a2f1a;
   margin-bottom: 20px;
