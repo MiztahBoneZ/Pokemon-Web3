@@ -93,9 +93,20 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=[YOUR MESSAGING  SENDER ID]
 VITE_FIREBASE_APP_ID=[YOUR APP ID]
 VITE_FIREBASE_MEASUREMENT_ID=[YOUR MEASUREMENT ID]
 ```
-5. You can use the existing contractID in the source code or you can create your own, use the PokeNFT.sol file inside /ProjectArtifacts as reference and use Remix to compile your new contract.
-6. In MetaMask ensure that your chosen token is added/enabled, default token is the ETH Sepolia Testnet Token
-7. To run the app, enter this to your terminal
+5. In MetaMask ensure that your chosen token and Network is added/enabled, the default token is the ETH Sepolia Testnet Token
+6. To run the app, enter this to your terminal.
 ```bash
 npm run dev
 ```
+After executing the command you should see a few lines i.e. Local and Network, ctrl click the link in the Local to view the web app.
+
+### Optional:
+Rather than using the contractID in the source code you can setup your own contract using <a href="https://remix.ethereum.org/">Remix</a>
+
+Steps:
+1. Use the PokeNFT.sol file inside the /Project_Artifacts folder as a reference for creating your own contract.
+2. Add your created contract file to the IDE.
+3. Go to Compile and compile the contract file.
+4. copy the abi and paste it inside the PokemonNFT.json file under the src/core.
+5. Click deployment and select your chosen network to deploy the contract to, gas and other fees may apply depending on the Network.
+6. copy the ContractID and replace all instances of the old ContractID in the source code with the new one
