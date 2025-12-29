@@ -64,3 +64,49 @@ This project demonstrates:
 - Practical implementation of ERC-721 smart contracts
 - Secure wallet-based authentication and ownership validation using MetaMask
 - Integration of blockchain assets with a modern web stack
+
+## Getting Started
+
+### Prerequisites:
+
+- <a href="https://metamask.io/">Metamask Wallet</a>
+- <a href="https://nodejs.org/en">Node.js | NPM</a>
+- <a href="https://console.firebase.google.com">Firebase/Firestore</a>
+
+### Setup:
+1. Clone this repo to your chosen directory.
+```Bash
+git clone https://github.com/MiztahBoneZ/Pokemon-Web3.git
+```
+2. Install dependencies.
+```Bash
+npm install
+```
+3. Create and setup a firebase project, ensure that firestore and authentication with email is enabled or added to the project.
+4. Create a .env file on the root folder of the project and use the configuration you got from the firebase setup, follow this format for the .env (remove the square bracket):
+```env
+VITE_FIREBASE_API_KEY=[YOUR API KEY]
+VITE_FIREBASE_AUTH_DOMAIN=[YOUR AUTH DOMAIN]
+VITE_FIREBASE_PROJECT_ID=[YOUR PROJECT ID]
+VITE_FIREBASE_STORAGE_BUCKET=[YOUR STORAGE BUCKET]
+VITE_FIREBASE_MESSAGING_SENDER_ID=[YOUR MESSAGING SENDER ID]
+VITE_FIREBASE_APP_ID=[YOUR APP ID]
+VITE_FIREBASE_MEASUREMENT_ID=[YOUR MEASUREMENT ID]
+```
+5. In MetaMask ensure that your chosen token and Network is added/enabled, the default token is the ETH Sepolia Testnet Token
+6. To run the app, enter this to your terminal.
+```bash
+npm run dev
+```
+After executing the command you should see a few lines i.e. Local and Network, ctrl click the link in the Local to view the web app.
+
+### Optional:
+Rather than using the contractID in the source code you can setup your own contract using <a href="https://remix.ethereum.org/">Remix</a>
+
+Steps:
+1. Use the PokeNFT.sol file inside the /Project_Artifacts folder as a reference for creating your own contract.
+2. Add your created contract file to the IDE.
+3. Go to Compile and compile the contract file.
+4. copy the abi and paste it inside the PokemonNFT.json file under the src/core.
+5. Click deployment and select your chosen network to deploy the contract to, gas and other fees may apply depending on the Network.
+6. copy the ContractID and replace all instances of the old ContractID in the source code with the new one
