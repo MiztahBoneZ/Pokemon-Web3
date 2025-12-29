@@ -76,20 +76,20 @@ This project demonstrates:
 ### Setup:
 1. Clone this repo to your chosen directory.
 ```Bash
-Git clone https://github.com/MiztahBoneZ/Pokemon-Web3.git
+git clone https://github.com/MiztahBoneZ/Pokemon-Web3.git
 ```
 2. Install dependencies.
 ```Bash
 npm install
 ```
-3. Create and setup a firebase project.
+3. Create and setup a firebase project, ensure that firestore and authentication with email is enabled or added to the project.
 4. Create a .env file on the root folder of the project and use the configuration you got from the firebase setup, follow this format for the .env (remove the square bracket):
 ```env
 VITE_FIREBASE_API_KEY=[YOUR API KEY]
 VITE_FIREBASE_AUTH_DOMAIN=[YOUR AUTH DOMAIN]
 VITE_FIREBASE_PROJECT_ID=[YOUR PROJECT ID]
 VITE_FIREBASE_STORAGE_BUCKET=[YOUR STORAGE BUCKET]
-VITE_FIREBASE_MESSAGING_SENDER_ID=[YOUR MESSAGING  SENDER ID]
+VITE_FIREBASE_MESSAGING_SENDER_ID=[YOUR MESSAGING SENDER ID]
 VITE_FIREBASE_APP_ID=[YOUR APP ID]
 VITE_FIREBASE_MEASUREMENT_ID=[YOUR MEASUREMENT ID]
 ```
