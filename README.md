@@ -64,3 +64,10 @@ This project demonstrates:
 - Practical implementation of ERC-721 smart contracts
 - Secure wallet-based authentication and ownership validation using MetaMask
 - Integration of blockchain assets with a modern web stack
+
+## Getting Started
+
+### Prerequisites
+
+- Metamask Browser Extension
+- NPM
