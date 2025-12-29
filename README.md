@@ -57,14 +57,6 @@ Firebase and Firestore are used to manage off-chain data that does not belong on
 
 Each Pokémon NFT is generated with randomized attributes, including stats and movesets, ensuring that no two Pokémon are ever identical. Because these attributes are tied to the minted NFT, they persist across transfers and trades. This allows Pokémon to retain their individual identity and value, whether held by the original minter or acquired through the marketplace.
 
-## Technical Purpose
-
-This project demonstrates:
-
-- Practical implementation of ERC-721 smart contracts
-- Secure wallet-based authentication and ownership validation using MetaMask
-- Integration of blockchain assets with a modern web stack
-
 ## Getting Started
 
 ### Prerequisites:
