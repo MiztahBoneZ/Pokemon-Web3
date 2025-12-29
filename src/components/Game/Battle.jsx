@@ -6,8 +6,12 @@ import PokemonNFTABI from "../../Core/PokemonNFT.json";
 import "./Battle.css";
 
 import MOVES_DATABASE from "./Battle_Data/MoveDatabase";
-import TYPE_EFFECTIVENESS from "./Battle_Data/TypeEffectiveness";
 import BIOMES from "./Battle_Data/Biomes";
+
+import {
+  getTypeEffectiveness,
+  calculateDamage,
+} from "./Battle_Data/utils/DmgCompute";
 
 const CONTRACT_ADDRESS = "0xF3E7AE62f5a8DBE879e70e94Acfa10E4D12354D7";
 
@@ -288,119 +292,15 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     return { tier: "Common", color: "#CCC" };
   };
 
-  const getTypeEffectiveness = (moveType, defenderTypes) => {
-    let multiplier = 1;
-
-    defenderTypes.forEach((defType) => {
-      const effectiveness = TYPE_EFFECTIVENESS[moveType];
-      if (!effectiveness) return;
-
-      if (effectiveness.superEffective.includes(defType)) {
-        multiplier *= 2;
-      }
-      if (effectiveness.notVery.includes(defType)) {
-        multiplier *= 0.5;
-      }
-      if (effectiveness.noEffect.includes(defType)) {
-        multiplier = 0;
-      }
-    });
-
-    return multiplier;
-  };
-
-  const applyStatModifier = (baseStat, stages) => {
-    if (stages === 0) return baseStat;
-    const multiplier =
-      stages > 0 ? (2 + stages) / 2 : 2 / (2 + Math.abs(stages));
-    return Math.floor(baseStat * multiplier);
-  };
-
-  const calculateDamage = (
-    attacker,
-    defender,
-    moveName,
-    attackerStatChanges,
-    defenderStatChanges
-  ) => {
-    const moveData = MOVES_DATABASE[moveName] || {
-      type: attacker.types[0],
-      category: "physical",
-      power: 50,
-      accuracy: 100,
-    };
-
-    if (moveData.category === "status" || moveData.power === 0) {
-      return { damage: 0, typeMultiplier: 1, isCrit: false, moveData };
-    }
-
-    const level = attacker.level || attacker.sessionLevel || 1;
-
-    const baseAttack =
-      moveData.category === "physical"
-        ? attacker.currentStats?.attack || attacker.stats.attack
-        : attacker.currentStats?.["special-attack"] ||
-          attacker.stats["special-attack"];
-
-    const baseDefense =
-      moveData.category === "physical"
-        ? defender.currentStats?.defense || defender.stats.defense
-        : defender.currentStats?.["special-defense"] ||
-          defender.stats["special-defense"];
-
-    const attackStat =
-      moveData.category === "physical"
-        ? applyStatModifier(baseAttack, attackerStatChanges.attack || 0)
-        : applyStatModifier(
-            baseAttack,
-            attackerStatChanges["special-attack"] || 0
-          );
-
-    const defenseStat =
-      moveData.category === "physical"
-        ? applyStatModifier(baseDefense, defenderStatChanges.defense || 0)
-        : applyStatModifier(
-            baseDefense,
-            defenderStatChanges["special-defense"] || 0
-          );
-
-    const isCrit = Math.random() < 0.0625;
-    const critMultiplier = isCrit ? 1.5 : 1;
-
-    const hasSTAB = attacker.types.includes(moveData.type);
-    const stabMultiplier = hasSTAB ? 1.5 : 1;
-
-    const typeMultiplier = getTypeEffectiveness(moveData.type, defender.types);
-    const random = 0.85 + Math.random() * 0.15;
-
-    const damage = Math.floor(
-      ((((2 * level) / 5 + 2) * moveData.power * (attackStat / defenseStat)) /
-        50 +
-        2) *
-        critMultiplier *
-        stabMultiplier *
-        typeMultiplier *
-        random
-    );
-
-    return {
-      damage: Math.max(1, damage),
-      typeMultiplier,
-      isCrit,
-      hasSTAB,
-      moveData,
-    };
-  };
-
   const applyStatusEffect = (moveData, target, targetName) => {
     if (!moveData.statusEffect) return;
 
     const { type, chance } = moveData.statusEffect;
-    
+
     if (Math.random() * 100 > chance) return;
 
     const setStatus = target === "player" ? setPlayerStatus : setWildStatus;
-    
+
     // Check if already has a status condition
     const currentStatus = target === "player" ? playerStatus : wildStatus;
     if (currentStatus) {
@@ -496,7 +396,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         }
         setPlayerStatus({ ...playerStatus, turns: playerStatus.turns - 1 });
         if (playerStatus.turns === 0) {
-          addLog(`${activePokemon.name.toUpperCase()} snapped out of confusion!`);
+          addLog(
+            `${activePokemon.name.toUpperCase()} snapped out of confusion!`
+          );
           setPlayerStatus(null);
         }
       }
@@ -613,7 +515,11 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       }
 
       // Apply status effects from status moves
-      applyStatusEffect(moveData, "wild", `Wild ${wildPokemon.name.toUpperCase()}`);
+      applyStatusEffect(
+        moveData,
+        "wild",
+        `Wild ${wildPokemon.name.toUpperCase()}`
+      );
 
       setMovePP((prev) => ({ ...prev, [move]: prev[move] - 1 }));
       setIsAnimating(false);
@@ -641,7 +547,11 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     addLog(`Dealt ${damage} damage!${effectiveness}`);
 
     // Apply secondary status effects from damaging moves
-    applyStatusEffect(moveData, "wild", `Wild ${wildPokemon.name.toUpperCase()}`);
+    applyStatusEffect(
+      moveData,
+      "wild",
+      `Wild ${wildPokemon.name.toUpperCase()}`
+    );
 
     if (moveData.statChanges) {
       const target = moveData.statChanges.target;
@@ -710,7 +620,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
           }
           setWildStatus({ ...wildStatus, turns: wildStatus.turns - 1 });
           if (wildStatus.turns === 0) {
-            addLog(`Wild ${wildPokemon.name.toUpperCase()} snapped out of confusion!`);
+            addLog(
+              `Wild ${wildPokemon.name.toUpperCase()} snapped out of confusion!`
+            );
             setWildStatus(null);
           }
         }
@@ -895,7 +807,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
     addLog(`${playerTeam[activePlayerIndex].name.toUpperCase()} fainted!`);
 
     const nextIndex = playerTeam.findIndex(
-      (p, idx) => idx > activePlayerIndex && p.currentHP > 0
+      (p, idx) => idx !== activePlayerIndex && p.currentHP > 0
     );
 
     if (nextIndex !== -1) {
@@ -903,14 +815,14 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
         setActivePlayerIndex(nextIndex);
         setPlayerStatChanges({});
         setPlayerStatus(null);
-        
+
         const ppTracker = {};
         playerTeam[nextIndex].moves.forEach((move) => {
           const moveData = MOVES_DATABASE[move];
           ppTracker[move] = moveData ? moveData.pp : 10;
         });
         setMovePP(ppTracker);
-        
+
         addLog(`Go, ${playerTeam[nextIndex].name.toUpperCase()}!`);
         setIsPlayerTurn(true);
       }, 2000);
@@ -1154,7 +1066,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
 
     setIsSwitching(true);
     addLog(`${playerTeam[activePlayerIndex].name.toUpperCase()}, come back!`);
-    
+
     setTimeout(() => {
       setActivePlayerIndex(index);
       setPlayerStatChanges({});
@@ -1168,9 +1080,9 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       setMovePP(ppTracker);
 
       addLog(`Go, ${playerTeam[index].name.toUpperCase()}!`);
-      
+
       setIsSwitching(false);
-      
+
       // Enemy gets a free turn after switching
       setTimeout(() => enemyTurn(), 1000);
     }, 500);
@@ -1248,7 +1160,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
               {wildPokemon.name.toUpperCase()}
               <span className="level">Lv.{wildPokemon.level}</span>
               {wildStatus && (
-                <span 
+                <span
                   className="status-badge"
                   style={{ backgroundColor: getStatusColor(wildStatus.type) }}
                 >
@@ -1327,7 +1239,7 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
               {activePokemon.name.toUpperCase()}
               <span className="level">Lv.{activePokemon.sessionLevel}</span>
               {playerStatus && (
-                <span 
+                <span
                   className="status-badge"
                   style={{ backgroundColor: getStatusColor(playerStatus.type) }}
                 >
@@ -1400,60 +1312,65 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       </div>
 
       <div className="battle-actions">
-        {battlePhase === "battle" && isPlayerTurn && !isAnimating && !isSwitching && (
-          <>
-            <div className="moves-grid">
-              {activePokemon.moves.map((move, idx) => {
-                const moveData = MOVES_DATABASE[move] || {
-                  type: "normal",
-                  power: 50,
-                  pp: 10,
-                };
-                const currentPP = movePP[move] || 0;
-                const isOutOfPP = currentPP <= 0;
+        {battlePhase === "battle" &&
+          isPlayerTurn &&
+          !isAnimating &&
+          !isSwitching && (
+            <>
+              <div className="moves-grid">
+                {activePokemon.moves.map((move, idx) => {
+                  const moveData = MOVES_DATABASE[move] || {
+                    type: "normal",
+                    power: 50,
+                    pp: 10,
+                  };
+                  const currentPP = movePP[move] || 0;
+                  const isOutOfPP = currentPP <= 0;
 
-                return (
-                  <button
-                    key={idx}
-                    className={`move-btn ${isOutOfPP ? "out-of-pp" : ""}`}
-                    onClick={() => !isOutOfPP && playerAttack(idx)}
-                    disabled={isOutOfPP}
-                    style={{
-                      borderLeft: `4px solid ${getTypeColor(moveData.type)}`,
-                      opacity: isOutOfPP ? 0.5 : 1,
-                    }}
-                  >
-                    <div className="move-name">
-                      {move.replace("-", " ").toUpperCase()}
-                    </div>
-                    <div className="move-info">
-                      <span
-                        className="move-type"
-                        style={{ background: getTypeColor(moveData.type) }}
-                      >
-                        {moveData.type}
-                      </span>
-                      <span className="move-category">{moveData.category}</span>
-                      {moveData.power > 0 && (
-                        <span className="move-power">
-                          PWR: {moveData.power}
+                  return (
+                    <button
+                      key={idx}
+                      className={`move-btn ${isOutOfPP ? "out-of-pp" : ""}`}
+                      onClick={() => !isOutOfPP && playerAttack(idx)}
+                      disabled={isOutOfPP}
+                      style={{
+                        borderLeft: `4px solid ${getTypeColor(moveData.type)}`,
+                        opacity: isOutOfPP ? 0.5 : 1,
+                      }}
+                    >
+                      <div className="move-name">
+                        {move.replace("-", " ").toUpperCase()}
+                      </div>
+                      <div className="move-info">
+                        <span
+                          className="move-type"
+                          style={{ background: getTypeColor(moveData.type) }}
+                        >
+                          {moveData.type}
                         </span>
-                      )}
-                      <span className="move-pp">
-                        PP: {currentPP}/{moveData.pp}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="other-actions">
-              <button className="action-btn" onClick={attemptRun}>
-                Run
-              </button>
-            </div>
-          </>
-        )}
+                        <span className="move-category">
+                          {moveData.category}
+                        </span>
+                        {moveData.power > 0 && (
+                          <span className="move-power">
+                            PWR: {moveData.power}
+                          </span>
+                        )}
+                        <span className="move-pp">
+                          PP: {currentPP}/{moveData.pp}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="other-actions">
+                <button className="action-btn" onClick={attemptRun}>
+                  Run
+                </button>
+              </div>
+            </>
+          )}
 
         {battlePhase === "victory" && !isMinting && (
           <div className="victory-actions">
@@ -1533,5 +1450,4 @@ export default function Battle({ team, floor, onBattleEnd, onCapture }) {
       </div>
     </div>
   );
-
 }
