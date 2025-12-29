@@ -67,7 +67,35 @@ This project demonstrates:
 
 ## Getting Started
 
-### Prerequisites
+### Prerequisites:
 
-- Metamask Browser Extension
-- NPM
+- <a href="https://metamask.io/">Metamask Wallet</a>
+- <a href="https://nodejs.org/en">Node.js | NPM</a>
+- <a href="https://console.firebase.google.com">Firebase/Firestore</a>
+
+### Setup:
+1. Clone this repo to your chosen directory.
+```Bash
+Git clone https://github.com/MiztahBoneZ/Pokemon-Web3.git
+```
+2. Install dependencies.
+```Bash
+npm install
+```
+3. Create and setup a firebase project.
+4. Create a .env file on the root folder of the project and use the configuration you got from the firebase setup, follow this format for the .env (remove the square bracket):
+```env
+VITE_FIREBASE_API_KEY=[YOUR API KEY]
+VITE_FIREBASE_AUTH_DOMAIN=[YOUR AUTH DOMAIN]
+VITE_FIREBASE_PROJECT_ID=[YOUR PROJECT ID]
+VITE_FIREBASE_STORAGE_BUCKET=[YOUR STORAGE BUCKET]
+VITE_FIREBASE_MESSAGING_SENDER_ID=[YOUR MESSAGING  SENDER ID]
+VITE_FIREBASE_APP_ID=[YOUR APP ID]
+VITE_FIREBASE_MEASUREMENT_ID=[YOUR MEASUREMENT ID]
+```
+5. You can use the existing contractID in the source code or you can create your own, use the PokeNFT.sol file inside /ProjectArtifacts as reference and use Remix to compile your new contract.
+6. In MetaMask ensure that your chosen token is added/enabled, default token is the ETH Sepolia Testnet Token
+7. To run the app, enter this to your terminal
+```bash
+npm run dev
+```
