@@ -1,6 +1,6 @@
 const BIOMES = {
   forest: {
-    name: "Grasslands",
+    name: "Forest",
     types: ["grass", "bug", "normal"],
     color: "#78C850",
   },
@@ -35,7 +35,7 @@ const BIOMES = {
     color: "#B8A038",
   },
   fairy: {
-    name: "Fairy Garden",
+    name: "Enchanted Forest",
     types: ["fairy", "grass"],
     color: "#EE99AC",
   },

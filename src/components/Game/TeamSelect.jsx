@@ -180,7 +180,7 @@ export default function TeamSelect() {
 
       <div className="team-actions">
         <button className="team-btn confirm" onClick={handleStartAdventure}>
-          🎮 Start Adventure
+          Start Adventure
         </button>
         <button className="team-btn cancel" onClick={() => onBack()}>
           Cancel

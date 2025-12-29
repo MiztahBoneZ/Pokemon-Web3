@@ -67,11 +67,6 @@ export default function GamePage() {
     navigate(path);
   };
 
-  const handleAlert = (message) => {
-    playClickSound();
-    alert(message);
-  };
-
   return (
     <div className="gamepage-container">
       <div className="user-card">
@@ -107,12 +102,6 @@ export default function GamePage() {
             onMouseEnter={playHoverSound}
           >
             Pokémons
-          </button>
-          <button
-            onClick={() => handleAlert("Coming Soon")}
-            onMouseEnter={playHoverSound}
-          >
-            Trade
           </button>
           <button
             onClick={() => handleNavigation("/game/marketplace")}
