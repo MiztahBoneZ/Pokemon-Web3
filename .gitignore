@@ -26,4 +26,4 @@ dist-ssr
 # Firebase config
 #src/Core/firebase.js
 .env
-Project_Artifacts/MyNotes
+Project_Artifacts/MyNotes.docx

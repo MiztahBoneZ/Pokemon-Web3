@@ -132,21 +132,6 @@
   border: 3px solid #9bbc0f;
   box-shadow: 3px 3px 0 #1a2f1a;
 }
-.pokemon-sprite.enemy {
-  animation: bounce 1.2s infinite;
-}
-.pokemon-sprite.player {
-  animation: bounce 1.2s infinite 0.6s;
-}
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
 
 /* ---------------------------------------------
    BATTLE LOG
@@ -155,7 +140,7 @@
   background: #0f380f;
   border: 3px solid #9bbc0f;
   padding: 10px;
-  height: 80px; 
+  height: 80px;
   overflow-y: auto;
   box-shadow: inset 2px 2px 0 #1a2f1a;
   margin-bottom: 20px;
